@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import numpy as np
 import itertools as ite
 from scipy.stats import chi2
