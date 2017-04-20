@@ -10,15 +10,15 @@ import pandas as pd
 from pathlib import Path
 import time #only using time for timing/troubleshooting
 
-def matrix(a, x, y):
+def matrix(alphabet="ACGT", seq1, seq2):
     '''Build the dot-product of two strings. Details here: http://stackoverflow.com/questions/43511674/calculating-a-similarity-difference-matrix-from-equal-length-strings-in-python/43512150#43512150
     '''
-    a = np.array(list(a))
-    x = np.array(list(x))
-    y = np.array(list(y))
-    ax = (x[:, None] == a[None, :]).astype(int)
-    ay = (y[:, None] == a[None, :]).astype(int)
-    return np.dot(ay.T, ax)
+    alphabet = np.array(list(alphabet))
+    seq1 = np.array(list(seq1))
+    seq2 = np.array(list(seq2))
+    aseq1 = (seq1[:, None] == alphabet[None, :]).astype(int)
+    aseq2 = (seq2[:, None] == alphabet[None, :]).astype(int)
+    return np.dot(aseq2.T, aseq1)
 
 def MPTS(m):
     """ inputs
