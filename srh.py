@@ -68,25 +68,41 @@ def MPTMS(m):
         #print(s)
         p = 1 - chi2.cdf(s,3.0)
     return p
+
+def analyse_alignment(aln_path):
+    aln_name = Path(aln_path).parts[-2]
+
+    # read in the nexus alignment
+    dat = Nexus.Nexus()
+    dat.read(aln_path)
     
-def Test_aln(aln,dset):
-    """inputs 
-            charset_aln = alignment array of sites
-        output
-            p = array containing pvalues
-    
-    """
-    
+    # and again in another way
+    aln = AlignIO.read(open(aln_path), "nexus")
+
+    # turn the charset into an array    
     aln_array = np.array([list(rec) for rec in aln], np.character)
-    dat.charsets.keys() #these are the names to the CHARSETS in the .nex file, which you can iterate over in a for loop
-    i = 0
+
     p = np.array(['Dataset','Charset','Test','Sp1','Sp2','p-value'],dtype='U14')
+
+    # iterate over all the charsets in the alignment
     for n in dat.charsets.keys():
-        for q in itertools.combinations(list(range(len(aln))),2): #iterating over all taxa for sites
-            m, elog = matrix(aln_array[:,dat.charsets[n]][q[0]].tostring().upper().decode(),aln_array[:,dat.charsets[n]][q[1]].tostring().upper().decode())
-            p=np.vstack([p,[dset,n,'MPTS',aln[q[0]].name,aln[q[1]].name,MPTS(m)]])
-            p=np.vstack([p,[dset,n,'MPTMS',aln[q[0]].name,aln[q[1]].name,MPTMS(m)]])
-        i = i+1
+
+        # iterate over all pairs of taxa, and calculate test statistics for each
+        for q in itertools.combinations(list(range(len(aln))),2):
+
+            # get the two seqs as a dot-product matrix
+            m = seq_matrix(aln_array[:,dat.charsets[n]][q[0]].tostring().upper().decode(),
+                           aln_array[:,dat.charsets[n]][q[1]].tostring().upper().decode())
+
+            p=np.vstack([p,
+                        [aln_name,n,
+                        'MPTS',
+                        charset[q[0]].name,
+                        charset[q[1]].name,
+                        MPTS(m)]])
+
+            #p=np.vstack([p,[aln_name,n,'MPTMS',charset[q[0]].name,charset[q[1]].name,MPTMS(m)]])
+
     return p
 
 if __name__ == '__main__': 
