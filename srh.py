@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
-import itertools as ite
+import itertools 
 from scipy.stats import chi2
 import scipy as sp
 from Bio.Nexus import Nexus
@@ -75,7 +75,7 @@ def MPTS(m):
             p: is a p-value for the matched pairs test of symmetry
     """
     s = 0.0
-    for (i,j) in ite.product(range(0,4),range(0,4)):
+    for (i,j) in itertools.product(range(0,4),range(0,4)):
         if i<j:
             n = (m[i,j]-m[j,i])**2
             d = m[i,j]+m[j,i]
@@ -102,7 +102,7 @@ def MPTMS(m):
     ut = np.array([[d[0],d[1],d[2]]])
     u = ut.transpose()
     V = np.zeros((3,3))
-    for (i,j) in ite.product(range(0,3),range(0,3)):
+    for (i,j) in itertools.product(range(0,3),range(0,3)):
         if i==j:
             V[i,j]=r[i]+c[i]+2*m[i][i] #d_{i*}+d{*i}+2d{ii}
         elif i!=j:
@@ -129,7 +129,7 @@ def Test_aln(aln,dset):
     i = 0
     p = np.array(['Dataset','Charset','Test','Sp1','Sp2','p-value'],dtype='U14')
     for n in dat.charsets.keys():
-        for q in ite.combinations(list(range(len(aln))),2): #iterating over all taxa for sites
+        for q in itertools.combinations(list(range(len(aln))),2): #iterating over all taxa for sites
             m, elog = matrix(aln_array[:,dat.charsets[n]][q[0]].tostring().upper().decode(),aln_array[:,dat.charsets[n]][q[1]].tostring().upper().decode())
             p=np.vstack([p,[dset,n,'MPTS',aln[q[0]].name,aln[q[1]].name,MPTS(m)]])
             p=np.vstack([p,[dset,n,'MPTMS',aln[q[0]].name,aln[q[1]].name,MPTMS(m)]])
