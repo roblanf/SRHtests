@@ -10,63 +10,15 @@ import pandas as pd
 from pathlib import Path
 import time #only using time for timing/troubleshooting
 
-#import scipy.stats as sp
-
-def matrix(s1,s2):
-    m= np.zeros((4,4))
-    elog = [] #error log
-    for i in range(len(s1)):
-        #empty cases
-        if s1[i] == "?":
-            m = m
-        elif s2[i] == "?":
-            m = m
-        elif s1[i] == "-":
-            m = m
-        elif s2[i] == "-":
-            m = m
-        #cases of A->A
-        elif s1[i]==s2[i]:
-            if s1[i]=="A":
-                m[0,0]=m[0,0]+1
-            elif s1[i]=="C":
-                m[1,1]=m[1,1]+1
-            elif s1[i]=="G":
-                m[2,2]=m[2,2]+1
-            elif s1[i]=="T":
-                m[3,3]=m[3,3]+1
-        #other cases
-        elif s1[i]=="A":
-            if s2[i]=="C":
-                m[1,0]=m[1,0]+1
-            elif s2[i]=="G":
-                m[2,0]=m[2,0]+1
-            elif s2[i]=="T":
-                m[3,0]=m[3,0]+1
-        elif s1[i]=="C":
-            if s2[i]=="A":
-                m[0,1]=m[0,1]+1
-            elif s2[i]=="G":
-                m[2,1]=m[2,1]+1
-            elif s2[i]=="T":
-                m[3,1]=m[3,1]+1
-        elif s1[i]=="G":
-            if s2[i]=="A":
-                m[0,2]=m[0,2]+1
-            elif s2[i]=="C":
-                m[1,2]=m[1,2]+1
-            elif s2[i]=="T":
-                m[3,2]=m[3,2]+1
-        elif s1[i]=="T":
-            if s2[i]=="C":
-                m[1,3]=m[1,3]+1
-            elif s2[i]=="G":
-                m[2,3]=m[2,3]+1
-            elif s2[i]=="A":
-                m[0,3]=m[0,3]+1           
-        else:
-            elog.append([s1[i],s2[i],"error in matrix"])
-    return m, elog
+def matrix(a, x, y):
+    '''Build the dot-product of two strings. Details here: http://stackoverflow.com/questions/43511674/calculating-a-similarity-difference-matrix-from-equal-length-strings-in-python/43512150#43512150
+    '''
+    a = np.array(list(a))
+    x = np.array(list(x))
+    y = np.array(list(y))
+    ax = (x[:, None] == a[None, :]).astype(int)
+    ay = (y[:, None] == a[None, :]).astype(int)
+    return np.dot(ay.T, ax)
 
 def MPTS(m):
     """ inputs
