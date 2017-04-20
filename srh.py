@@ -22,20 +22,21 @@ def matrix(alphabet="ACGT", seq1, seq2):
 
 def MPTS(m):
     """ inputs
-            m: a 4x4 matrix of proportions
+            m: an nxn matrix of dot product of two sequences
         outputs
             p: is a p-value for the matched pairs test of symmetry
     """
     s = 0.0
-    for (i,j) in itertools.product(range(0,4),range(0,4)):
+    for (i,j) in itertools.product(range(0,m.shape[0]),range(0,m.shape[0])):
         if i<j:
             n = (m[i,j]-m[j,i])**2
             d = m[i,j]+m[j,i]
             if float(d) != 0.:
                 s = s+(float(n)/float(d)) 
-                p = 1 - chi2.cdf(s,6.0)
             else:
-                p = 'NA'
+                return('NA')
+
+    p = 1 - chi2.cdf(s,6.0)
 
     return p
 
