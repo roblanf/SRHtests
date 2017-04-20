@@ -10,7 +10,7 @@ import pandas as pd
 from pathlib import Path
 import time #only using time for timing/troubleshooting
 
-def matrix(alphabet="ACGT", seq1, seq2):
+def seq_matrix(alphabet="ACGT", seq1, seq2):
     '''Build the dot-product of two strings. Details here: http://stackoverflow.com/questions/43511674/calculating-a-similarity-difference-matrix-from-equal-length-strings-in-python/43512150#43512150
     '''
     alphabet = np.array(list(alphabet))
