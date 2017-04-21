@@ -71,7 +71,22 @@ def MPTMS(m):
         p = 1 - chi2.cdf(s,3.0)
     return p
 
-def analyse_alignment(aln_path):
+def analyse_alignments(folder, output_path):
+    # Analyse all alignments in a folder
+
+    outf=open(output_path,'ab')
+
+    p = np.array(['Dataset','Charset','Test','Sp1','Sp2','p-value'],dtype='U14')
+    np.savetxt(outf, p.reshape(1, p.shape[0]), delimiter=',', fmt='%s')
+
+    for aln_path in glob.iglob(os.path.join(folder, '**', '*.nex'), recursive=True):
+        print(aln_path)
+        analyse_alignment(aln_path, outf)
+
+    outf.close()
+
+def analyse_alignment(aln_path, outf):
+
     aln_name = Path(aln_path).parts[-2]
 
     # read in the nexus alignment
