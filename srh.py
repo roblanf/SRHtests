@@ -8,9 +8,13 @@ from Bio.Nexus import Nexus
 from Bio import AlignIO
 import pandas as pd
 from pathlib import Path
-import time #only using time for timing/troubleshooting
+from tqdm import tqdm
+import glob
+import os
+import sys
 
-def seq_matrix(alphabet="ACGT", seq1, seq2):
+
+def seq_matrix(seq1, seq2, alphabet="ACGT"):
     '''Build the dot-product of two strings. Details here: http://stackoverflow.com/questions/43511674/calculating-a-similarity-difference-matrix-from-equal-length-strings-in-python/43512150#43512150
     '''
     alphabet = np.array(list(alphabet))
@@ -99,24 +103,24 @@ def analyse_alignment(aln_path, outf):
     # turn the charset into an array    
     aln_array = np.array([list(rec) for rec in aln], np.character)
 
-    p = np.array(['Dataset','Charset','Test','Sp1','Sp2','p-value'],dtype='U14')
 
     # iterate over all the charsets in the alignment
-    for n in dat.charsets.keys():
+    for n in tqdm(dat.charsets.keys()):
 
         # iterate over all pairs of taxa, and calculate test statistics for each
-        for q in itertools.combinations(list(range(len(aln))),2):
+        for q in tqdm(itertools.combinations(list(range(len(aln))),2)):
 
             # get the two seqs as a dot-product matrix
             m = seq_matrix(aln_array[:,dat.charsets[n]][q[0]].tostring().upper().decode(),
                            aln_array[:,dat.charsets[n]][q[1]].tostring().upper().decode())
 
-            p=np.vstack([p,
-                        [aln_name,n,
+            p=np.array( [aln_name,n,
                         'MPTS',
-                        charset[q[0]].name,
-                        charset[q[1]].name,
-                        MPTS(m)]])
+                        aln[q[0]].name,
+                        aln[q[1]].name,
+                        MPTS(m)])
+            
+            np.savetxt(outf, p.reshape(1, p.shape[0]), delimiter=',', fmt='%s')
 
             #p=np.vstack([p,[aln_name,n,'MPTMS',charset[q[0]].name,charset[q[1]].name,MPTMS(m)]])
 
