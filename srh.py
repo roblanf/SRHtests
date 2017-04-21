@@ -105,19 +105,8 @@ def analyse_alignment(aln_path):
 
             #p=np.vstack([p,[aln_name,n,'MPTMS',charset[q[0]].name,charset[q[1]].name,MPTMS(m)]])
 
-    return p
+if __name__ == "__main__":
+    folder = sys.argv[1]
+    output_path = sys.argv[2]
 
-if __name__ == '__main__': 
-    aln_path = input('input nex file here:')#'/Users/user/Documents/! ! 2017 ANU/Semester 1/SCNC2103/data reader/alignment.nex'
-    start_time = time.time()
-    dset=Path(aln_path).parts[-2]
-    dat = Nexus.Nexus()
-
-    dat.read(aln_path)
-    
-    aln = AlignIO.read(open(aln_path), "nexus")
-    
-    p = Test_aln(aln,dset)
-    df = pd.DataFrame(p)
-    df.to_csv("data.csv")
-    print('process complete with no errors in', (time.time() - start_time))
+    analyse_alignments(folder, output_path)
