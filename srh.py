@@ -26,17 +26,19 @@ def MPTS(m):
         outputs
             p: is a p-value for the matched pairs test of symmetry
     """
-    s = 0.0
-    for (i,j) in itertools.product(range(0,m.shape[0]),range(0,m.shape[0])):
-        if i<j:
-            n = (m[i,j]-m[j,i])**2
-            d = m[i,j]+m[j,i]
-            if float(d) != 0.:
-                s = s+(float(n)/float(d)) 
-            else:
-                return('NA')
+    d=(m+m.T)
+    off_diag_indices=np.triu_indices(len(d),1)
+    if 0 in d[off_diag_indices]:
+        return 'NA'
+    else:
+        numerator=(m-m.T)**2
+        denominator=m+m.T
+        s = np.sum(numerator[off_diag_indices]/denominator[off_diag_indices])
 
-    p = 1 - chi2.cdf(s,6.0)
+    # degrees of freedom
+    l = m.shape[0]
+    df = (l * (l - 1) / 2)
+    p = 1 - chi2.cdf(s,df)
 
     return p
 
