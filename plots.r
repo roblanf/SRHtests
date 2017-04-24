@@ -16,6 +16,7 @@ proportion_p <- function(pvals){
 }
 
 d = read.csv("~/Desktop/test.csv")
+d$p.value = as.numeric(as.character(d$p.value)) # Oh R
 
 # this shows the proportion of p values <0.2 for each charset (where there were at least 10 p values)
 d_prop = ddply(d, .(Dataset, Charset, Test), summarise, proportion = proportion_p(p.value))
