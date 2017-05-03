@@ -46,35 +46,6 @@ def MPTS(m):
 
     return p
 
-def MPTMS(m):
-    """ inputs
-            m: a 4x4 matrix of proportions
-        outputs
-            p: is a p-value for the matched pairs test of marginal symmetry
-    """
-    r = np.zeros((3))
-    r[0]=np.sum(m[0])
-    r[1]=np.sum(m[1])
-    r[2]=np.sum(m[2])
-    c = [sum(row[i] for row in m) for i in range(len(m[0]))]
-    d = [r[0]-c[0],r[1]-c[1],r[2]-c[2]]
-    ut = np.array([[d[0],d[1],d[2]]])
-    u = ut.transpose()
-    V = np.zeros((3,3))
-    for (i,j) in itertools.product(range(0,3),range(0,3)):
-        if i==j:
-            V[i,j]=r[i]+c[i]+2*m[i][i] #d_{i*}+d{*i}+2d{ii}
-        elif i!=j:
-            V[i,j]=-(m[i,j]+m[j,i])
-    if sp.linalg.det(V) == 0:
-        p='NA'
-    else:
-        Vi=np.linalg.inv(V)
-        s = (ut.dot(Vi)).dot(u)[0][0]
-        #print(s)
-        p = 1 - chi2.cdf(s,3.0)
-    return p
-
 def analyse_alignments(folder, output_path):
     # Analyse all alignments in a folder
 
@@ -121,8 +92,6 @@ def analyse_alignment(aln_path, outf):
                         MPTS(m)])
             
             np.savetxt(outf, p.reshape(1, p.shape[0]), delimiter=',', fmt='%s')
-
-            #p=np.vstack([p,[aln_name,n,'MPTMS',charset[q[0]].name,charset[q[1]].name,MPTMS(m)]])
 
 if __name__ == "__main__":
     folder = sys.argv[1]
