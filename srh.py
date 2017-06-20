@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import os
 import shutil
 import time
-import tqdm
+from tqdm import tqdm
 
 def nCr(n,r):
     f = math.factorial
