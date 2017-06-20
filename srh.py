@@ -89,8 +89,8 @@ def Test_aln(aln,dset,dat):
     no = nCr(len(aln),2)*3*len([len(v) for v in dat.charsets.keys()])+1
     p=np.empty([no,6],dtype='U21')
     p[0] = np.array(['Dataset','Charset','Test','Sp1','Sp2','pvalue'])
-    for n in dat.charsets.keys():
-        for q in tqdm(ite.combinations(list(range(len(aln))),2)): #iterating over all taxa for sites
+    for n in tqdm(dat.charsets.keys()):
+        for q in ite.combinations(list(range(len(aln))),2): #iterating over all taxa for sites
             m = simMtx('ACGT',aln_array[:,dat.charsets[n]][q[0]].tostring().upper().decode(),aln_array[:,dat.charsets[n]][q[1]].tostring().upper().decode())
             p[i]=np.array([dset,n,'MPTS',aln[q[0]].name,aln[q[1]].name, pval(MPTS(m),6)])
             i = i+1
@@ -219,73 +219,73 @@ if __name__ == '__main__':
     IQtree_rootDir = '/data/srh/processed_data/IQtree'
     for DirName, subdirList, fileList in os.walk(aln_rootDir):
         for fname in fileList:
-            if(fname=="alignment.nex"):
-                print(DirName)
-                head_DirName, datas = os.path.split(DirName)
-                aln_path = os.path.join(DirName,fname)
-                new_aln = os.path.join(DirName,'new_alignment.nex')
-                if not os.path.exists(new_aln):
-                    datatype(aln_path)
-                    if datatype(aln_path):
-                        start_time = time.time()
-                        dset=Path(new_aln).parts[-2]
-                        dat = Nexus.Nexus()
-                        dat.read(new_aln) 
-                        aln = AlignIO.read(open(new_aln), "nexus")
-                        p = Test_aln(aln,dset,dat)
-                        TempDir = os.path.join(SRH_rootDir,datas,'Data')
-                        if not os.path.exists(TempDir):
-                            os.makedirs(TempDir)
-                            os.chdir(TempDir)
-                        df =pd.DataFrame(p[1:], columns=p[0])
-                        T=table(p)
-                        tab=pd.DataFrame(T[1:],columns=table(p)[0])
-                        tab.to_csv('tablebinom.csv')
-                        df.to_csv('data.csv')
-                        all_MPTS_path = os.path.join(IQtree_rootDir,datas,"MPTS","All")
-                        if not os.path.exists(all_MPTS_path):
-                            os.makedirs(all_MPTS_path)
-                        good_MPTS_path = os.path.join(IQtree_rootDir,datas,"MPTS","Not_Bad")
-                        if not os.path.exists(good_MPTS_path):
-                            os.makedirs(good_MPTS_path)
-                        bad_MPTS_path = os.path.join(IQtree_rootDir,datas,"MPTS","Bad")
-                        if not os.path.exists(bad_MPTS_path):
-                            os.makedirs(bad_MPTS_path)
-                        all_MPTIS_path = os.path.join(IQtree_rootDir,datas,"MPTIS","All")
-                        if not os.path.exists(all_MPTIS_path):
-                            os.makedirs(all_MPTIS_path)
-                        good_MPTIS_path = os.path.join(IQtree_rootDir,datas,"MPTIS","Not_Bad")
-                        if not os.path.exists(good_MPTIS_path):
-                            os.makedirs(good_MPTIS_path)
-                        bad_MPTIS_path = os.path.join(IQtree_rootDir,datas,"MPTIS","Bad")
-                        if not os.path.exists(bad_MPTIS_path):
-                            os.makedirs(bad_MPTIS_path)
-                        all_MPTMS_path = os.path.join(IQtree_rootDir,datas,'MPTMS','All')
-                        if not os.path.exists(all_MPTMS_path):
-                            os.makedirs(all_MPTMS_path)
-                        good_MPTMS_path = os.path.join(IQtree_rootDir,datas,"MPTMS","Not_Bad")
-                        if not os.path.exists(good_MPTMS_path):
-                            os.makedirs(good_MPTMS_path)
-                        bad_MPTMS_path = os.path.join(IQtree_rootDir,datas,"MPTMS","Bad")
-                        if not os.path.exists(bad_MPTMS_path):
-                            os.makedirs(bad_MPTMS_path)
-                        MPTS_all_file = os.path.join(all_MPTS_path,'partition.nex')
-                        shutil.copy2(new_aln,os.path.join(all_MPTS_path,'alignment.nex'))
-                        MPTIS_all_file = os.path.join(all_MPTIS_path,'partition.nex')
-                        shutil.copy2(new_aln,os.path.join(all_MPTIS_path,'alignment.nex'))
-                        MPTMS_all_file = os.path.join(all_MPTMS_path,'partition.nex')
-                        shutil.copy2(new_aln,os.path.join(all_MPTMS_path,'alignment.nex'))
-                        MPTS_good_file = os.path.join(good_MPTS_path,'partition.nex')
-                        shutil.copy2(new_aln,os.path.join(good_MPTS_path,'alignment.nex'))
-                        MPTIS_good_file = os.path.join(good_MPTIS_path,'partition.nex')
-                        shutil.copy2(new_aln,os.path.join(good_MPTIS_path,'alignment.nex'))
-                        MPTMS_good_file = os.path.join(good_MPTMS_path,'partition.nex')
-                        shutil.copy2(new_aln,os.path.join(good_MPTMS_path,'alignment.nex'))
-                        MPTS_bad_file = os.path.join(bad_MPTS_path,'partition.nex')
-                        shutil.copy2(new_aln,os.path.join(bad_MPTS_path,'alignment.nex'))
-                        MPTIS_bad_file = os.path.join(bad_MPTIS_path,'partition.nex')
-                        shutil.copy2(new_aln,os.path.join(bad_MPTIS_path,'alignment.nex'))
-                        MPTMS_bad_file = os.path.join(bad_MPTMS_path,'partition.nex')
-                        shutil.copy2(new_aln,os.path.join(bad_MPTMS_path,'alignment.nex'))
-                        partition_files(T,new_aln)
+	        if(fname=="alignment.nex"):
+	            print(DirName)
+	            head_DirName, datas = os.path.split(DirName)
+	            aln_path = os.path.join(DirName,fname)
+	            new_aln = os.path.join(DirName,'new_alignment.nex')
+	            if not os.path.exists(new_aln):
+	                datatype(aln_path)
+	                if datatype(aln_path):
+	                    start_time = time.time()
+	                    dset=Path(new_aln).parts[-2]
+	                    dat = Nexus.Nexus()
+	                    dat.read(new_aln) 
+	                    aln = AlignIO.read(open(new_aln), "nexus")
+	                    p = Test_aln(aln,dset,dat)
+	                    TempDir = os.path.join(SRH_rootDir,datas,'Data')
+	                    if not os.path.exists(TempDir):
+	                        os.makedirs(TempDir)
+	                        os.chdir(TempDir)
+	                    df =pd.DataFrame(p[1:], columns=p[0])
+	                    T=table(p)
+	                    tab=pd.DataFrame(T[1:],columns=table(p)[0])
+	                    tab.to_csv('tablebinom.csv')
+	                    df.to_csv('data.csv')
+	                    all_MPTS_path = os.path.join(IQtree_rootDir,datas,"MPTS","All")
+	                    if not os.path.exists(all_MPTS_path):
+	                        os.makedirs(all_MPTS_path)
+	                    good_MPTS_path = os.path.join(IQtree_rootDir,datas,"MPTS","Not_Bad")
+	                    if not os.path.exists(good_MPTS_path):
+	                        os.makedirs(good_MPTS_path)
+	                    bad_MPTS_path = os.path.join(IQtree_rootDir,datas,"MPTS","Bad")
+	                    if not os.path.exists(bad_MPTS_path):
+	                        os.makedirs(bad_MPTS_path)
+	                    all_MPTIS_path = os.path.join(IQtree_rootDir,datas,"MPTIS","All")
+	                    if not os.path.exists(all_MPTIS_path):
+	                        os.makedirs(all_MPTIS_path)
+	                    good_MPTIS_path = os.path.join(IQtree_rootDir,datas,"MPTIS","Not_Bad")
+	                    if not os.path.exists(good_MPTIS_path):
+	                        os.makedirs(good_MPTIS_path)
+	                    bad_MPTIS_path = os.path.join(IQtree_rootDir,datas,"MPTIS","Bad")
+	                    if not os.path.exists(bad_MPTIS_path):
+	                        os.makedirs(bad_MPTIS_path)
+	                    all_MPTMS_path = os.path.join(IQtree_rootDir,datas,'MPTMS','All')
+	                    if not os.path.exists(all_MPTMS_path):
+	                        os.makedirs(all_MPTMS_path)
+	                    good_MPTMS_path = os.path.join(IQtree_rootDir,datas,"MPTMS","Not_Bad")
+	                    if not os.path.exists(good_MPTMS_path):
+	                        os.makedirs(good_MPTMS_path)
+	                    bad_MPTMS_path = os.path.join(IQtree_rootDir,datas,"MPTMS","Bad")
+	                    if not os.path.exists(bad_MPTMS_path):
+	                        os.makedirs(bad_MPTMS_path)
+	                    MPTS_all_file = os.path.join(all_MPTS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(all_MPTS_path,'alignment.nex'))
+	                    MPTIS_all_file = os.path.join(all_MPTIS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(all_MPTIS_path,'alignment.nex'))
+	                    MPTMS_all_file = os.path.join(all_MPTMS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(all_MPTMS_path,'alignment.nex'))
+	                    MPTS_good_file = os.path.join(good_MPTS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(good_MPTS_path,'alignment.nex'))
+	                    MPTIS_good_file = os.path.join(good_MPTIS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(good_MPTIS_path,'alignment.nex'))
+	                    MPTMS_good_file = os.path.join(good_MPTMS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(good_MPTMS_path,'alignment.nex'))
+	                    MPTS_bad_file = os.path.join(bad_MPTS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(bad_MPTS_path,'alignment.nex'))
+	                    MPTIS_bad_file = os.path.join(bad_MPTIS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(bad_MPTIS_path,'alignment.nex'))
+	                    MPTMS_bad_file = os.path.join(bad_MPTMS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(bad_MPTMS_path,'alignment.nex'))
+	                    partition_files(T,new_aln)
     print('process complete with no errors in', (time.time() - start_time))
