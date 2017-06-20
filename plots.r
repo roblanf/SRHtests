@@ -37,7 +37,9 @@ pass <- function(pvals){ return(sum(pvals>=0.05))}
 fail <- function(pvals){ return(sum(pvals<0.05))}
 passfail = ddply(charsets, .(Dataset), summarise, fail = fail(binomial), pass = pass(binomial))
 
+fail_proportion = data.frame(proportion = passfail$fail / (passfail$pass + passfail$fail))
 
+ggplot(fail_proportion, aes(x = proportion)) + geom_histogram()
 
 # we can look at an individual dataset / charset like this
 dnum=6
@@ -61,5 +63,5 @@ p + geom_line(aes(color=Charset), stat="density", size=1, alpha=0.4)
 
 
 # here's a bad dataset
-p = ggplot(subset(d, Dataset=="Borowiec_2015"), aes(x=p.value))
+p = ggplot(subset(d, Dataset=="Faircloth_2013"), aes(x=p.value))
 p + geom_line(stat="density", alpha=0.25, aes(group=Charset, y = ..scaled..))
