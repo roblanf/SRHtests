@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import os
 import shutil
 import time
+import tqdm
 
 def nCr(n,r):
     f = math.factorial
@@ -89,7 +90,7 @@ def Test_aln(aln,dset,dat):
     p=np.empty([no,6],dtype='U21')
     p[0] = np.array(['Dataset','Charset','Test','Sp1','Sp2','pvalue'])
     for n in dat.charsets.keys():
-        for q in ite.combinations(list(range(len(aln))),2): #iterating over all taxa for sites
+        for q in tqdm(ite.combinations(list(range(len(aln))),2)): #iterating over all taxa for sites
             m = simMtx('ACGT',aln_array[:,dat.charsets[n]][q[0]].tostring().upper().decode(),aln_array[:,dat.charsets[n]][q[1]].tostring().upper().decode())
             p[i]=np.array([dset,n,'MPTS',aln[q[0]].name,aln[q[1]].name, pval(MPTS(m),6)])
             i = i+1
@@ -219,6 +220,7 @@ if __name__ == '__main__':
     for DirName, subdirList, fileList in os.walk(aln_rootDir):
         for fname in fileList:
 	        if(fname=="alignment.nex"):
+	        	print(DirName)
 	            head_DirName, datas = os.path.split(DirName)
 	            aln_path = os.path.join(DirName,fname)
 	            new_aln = os.path.join(DirName,'new_alignment.nex')
