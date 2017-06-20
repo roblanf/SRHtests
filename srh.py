@@ -1,100 +1,289 @@
-#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri May 26 12:19:37 2017
 
+@author: Suha nasser
+"""
 import numpy as np
-import itertools 
+import itertools as ite
 from scipy.stats import chi2
+from scipy.stats import binom_test
 import scipy as sp
 from Bio.Nexus import Nexus
 from Bio import AlignIO
 import pandas as pd
+import math
 from pathlib import Path
-from tqdm import tqdm
-import glob
+import seaborn as sns
+import matplotlib.pyplot as plt
 import os
-import sys
+import shutil
+import time
 
+def nCr(n,r):
+    f = math.factorial
+    return f(n) // f(r) // f(n-r)
 
-def seq_matrix(seq1, seq2, alphabet="ACGT"):
-    '''Build the dot-product of two strings. Details here: http://stackoverflow.com/questions/43511674/calculating-a-similarity-difference-matrix-from-equal-length-strings-in-python/43512150#43512150
-    '''
-    alphabet = np.array(list(alphabet))
-    seq1 = np.array(list(seq1))
-    seq2 = np.array(list(seq2))
-    aseq1 = (seq1[:, None] == alphabet[None, :]).astype(int)
-    aseq2 = (seq2[:, None] == alphabet[None, :]).astype(int)
-    return np.dot(aseq2.T, aseq1)
-
+def simMtx(a, x, y):
+    a = np.array(list(a))
+    x = np.array(list(x))
+    y = np.array(list(y))
+    ax = (x[:, None] == a[None, :]).astype(int)
+    ay = (y[:, None] == a[None, :]).astype(int)
+    return np.dot(ay.T, ax)
 def MPTS(m):
-    """ inputs
-            m: an nxn matrix of dot product of two sequences
-        outputs
-            p: is a p-value for the matched pairs test of symmetry
-    """
     d=(m+m.T)
     off_diag_indices=np.triu_indices(len(d),1)
     if 0 in d[off_diag_indices]:
-        return 'NA'
+        return float('NaN')
     else:
         numerator=(m-m.T)**2
         denominator=m+m.T
-        s = np.sum(numerator[off_diag_indices]/denominator[off_diag_indices])
+        return np.sum(numerator[off_diag_indices]/denominator[off_diag_indices])
 
-    # degrees of freedom
-    l = m.shape[0]
-    df = (l * (l - 1) / 2)
-    p = 1 - chi2.cdf(s,df)
+def MPTMS(m):
+    r = np.zeros((3))
+    r[0]=np.sum(m[0])
+    r[1]=np.sum(m[1])
+    r[2]=np.sum(m[2])
+    c = [sum(row[i] for row in m) for i in range(len(m[0]))]
+    d = [r[0]-c[0],r[1]-c[1],r[2]-c[2]]
+    ut = np.array([[d[0],d[1],d[2]]])
+    u = ut.transpose()
+    V = np.zeros((3,3))
+    for (i,j) in ite.product(range(0,3),range(0,3)):
+        if i==j:
+            V[i,j]=r[i]+c[i]-2*m[i][i] #d_{i*}+d{*i}+2d{ii}
+        elif i!=j:
+            V[i,j]=-(m[i,j]+m[j,i])
+    if sp.linalg.det(V) == 0:
+        s=float('NaN')
+    else:
+        Vi=np.linalg.inv(V)
+        s = (ut.dot(Vi)).dot(u)[0][0]
+    return s
 
+def MPTIS(MPTSs,MPTMSs):
+    if isinstance(MPTSs,float) and isinstance(MPTMSs,float)==True:
+        s = MPTSs-MPTMSs
+    else:
+        s=float('NaN')
+    return s
+
+def pval(sval,v):
+    '''
+    Gets a test statistic and outputs a pvalue for a chi squarred test with degrees of freedom v
+    '''
+    if math.isnan(sval)==False:
+        p=1.-float(chi2.cdf(sval,v))
+    else:
+        p=-42
+        #using -42 rather than NaN because -42 is easier to work with in Pandas/Numpy conversions
     return p
 
-def analyse_alignments(folder, output_path):
-    # Analyse all alignments in a folder
-
-    outf=open(output_path,'ab')
-
-    p = np.array(['Dataset','Charset','Test','Sp1','Sp2','p-value'],dtype='U14')
-    np.savetxt(outf, p.reshape(1, p.shape[0]), delimiter=',', fmt='%s')
-
-    for aln_path in glob.iglob(os.path.join(folder, '**', '*.nex'), recursive=True):
-        print(aln_path)
-        analyse_alignment(aln_path, outf)
-
-    outf.close()
-
-def analyse_alignment(aln_path, outf):
-
-    aln_name = Path(aln_path).parts[-2]
-
-    # read in the nexus alignment
-    dat = Nexus.Nexus()
-    dat.read(aln_path)
-    
-    # and again in another way
-    aln = AlignIO.read(open(aln_path), "nexus")
-
-    # turn the charset into an array    
+def Test_aln(aln,dset,dat):
     aln_array = np.array([list(rec) for rec in aln], np.character)
+    dat.charsets.keys()
+    i = 1
+    no = nCr(len(aln),2)*3*len([len(v) for v in dat.charsets.keys()])+1
+    p=np.empty([no,6],dtype='U21')
+    p[0] = np.array(['Dataset','Charset','Test','Sp1','Sp2','pvalue'])
+    for n in dat.charsets.keys():
+        for q in ite.combinations(list(range(len(aln))),2): #iterating over all taxa for sites
+            m = simMtx('ACGT',aln_array[:,dat.charsets[n]][q[0]].tostring().upper().decode(),aln_array[:,dat.charsets[n]][q[1]].tostring().upper().decode())
+            p[i]=np.array([dset,n,'MPTS',aln[q[0]].name,aln[q[1]].name, pval(MPTS(m),6)])
+            i = i+1
+            p[i]=np.array([dset,n,'MPTMS',aln[q[0]].name,aln[q[1]].name,pval(MPTMS(m),3)])
+            i = i+1
+            p[i]=np.array([dset,n,'MPTIS',aln[q[0]].name,aln[q[1]].name,pval(MPTIS(MPTS(m),MPTMS(m)),3)])
+            i = i+1
+    return p
 
+def plot(df,dset):
+    plt.close()
+    sns.set(style="darkgrid")
+    df.pvalue=pd.to_numeric(df.pvalue)
+    df = df[df.pvalue != -42]
+    g = sns.FacetGrid(df, row="Charset", col="Test", margin_titles=True)
+    bins = np.linspace(0,1,num=50)
+    g.map(plt.hist, "pvalue", color="steelblue", bins=bins, lw=0)
+    plt.savefig('chart.png')
+    plt.show()
+    return
 
-    # iterate over all the charsets in the alignment
-    for n in tqdm(dat.charsets.keys()):
+def table(p):
+    Tests={'MPTS','MPTIS','MPTMS'}
+    T=np.empty([len(dat.charsets.keys())*3+1,6], dtype='<U21')
+    T[0]= np.array(['Charset','Test','p<0.05','p>=0.05','NA','p_binomial'])
+    i = 1
+    for n in dat.charsets.keys():
+        dfx=df.groupby(['Charset']).get_group(n)
+        for m in Tests:
+            M = dfx.groupby(['Test']).get_group(m)
+            T[i][0]=n
+            T[i][1]=m
+            T[i][2]=len(np.where(np.absolute(M[M.columns[5]].values.astype(float))<0.05)[0])
+            T[i][3]=len(np.where(M[M.columns[5]].values.astype(float)>=0.05)[0])
+            T[i][4]=float(len(M))-(float(T[i][2])+float(T[i][3]))
+            T[i][5]=binom_test(int(T[i][2]),(int(T[i][2])+int(T[i][3])),p=0.05,alternative='greater')
+            #use normal distibution to approximate binomial distribution by the central limit theorem - makes it easier to asses the 'tail'
+            i = i+1
+    return T
 
-        # iterate over all pairs of taxa, and calculate test statistics for each
-        for q in tqdm(itertools.combinations(list(range(len(aln))),2)):
+def datatype(aln_path):
+    if_nucleotide = False
+    with open(new_aln,'w') as new:
+        for line in open(aln_path):
+            if 'format datatype=nucleotide' in line:
+                if_nucleotide = True
+            if 'genome' not in line:
+                if 'outgroups' not in line:
+                    new.writelines(line)
+    return if_nucleotide
 
-            # get the two seqs as a dot-product matrix
-            m = seq_matrix(aln_array[:,dat.charsets[n]][q[0]].tostring().upper().decode(),
-                           aln_array[:,dat.charsets[n]][q[1]].tostring().upper().decode())
+def init_partition_files(partition_file):
+    with open(partition_file,'w') as f:
+        f.writelines("#nexus\n")
+        f.writelines("begin sets;\n")
+    return
 
-            p=np.array( [aln_name,n,
-                        'MPTS',
-                        aln[q[0]].name,
-                        aln[q[1]].name,
-                        MPTS(m)])
-            
-            np.savetxt(outf, p.reshape(1, p.shape[0]), delimiter=',', fmt='%s')
+def end_partition_files(partition_file):    
+    with open(partition_file,'a') as f:
+        f.writelines("end;")
+    return 
 
-if __name__ == "__main__":
-    folder = sys.argv[1]
-    output_path = sys.argv[2]
-
-    analyse_alignments(folder, output_path)
+def partition_files(T,aln_path):
+    init_partition_files(MPTS_all_file)
+    init_partition_files(MPTIS_all_file)
+    init_partition_files(MPTMS_all_file)
+    init_partition_files(MPTS_good_file)
+    init_partition_files(MPTIS_good_file)
+    init_partition_files(MPTMS_good_file)
+    init_partition_files(MPTS_bad_file)
+    init_partition_files(MPTIS_bad_file)
+    init_partition_files(MPTMS_bad_file)
+    
+    i=1
+    
+    for i in range(len(T)):
+        if T[i][1]=='MPTS':
+            if float(T[i][5])>=0.05:
+                with open(MPTS_good_file,'a') as good_MPTS:
+                    good_MPTS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+                with open(MPTS_all_file,'a') as all_MPTS:
+                    all_MPTS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+            else:
+                with open(MPTS_bad_file,'a') as bad_MPTS:
+                    bad_MPTS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+                with open(MPTS_all_file,'a') as all_MPTS:
+                    all_MPTS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+        if T[i][1]=='MPTIS':
+            if float(T[i][5])>=0.05:
+                with open(MPTIS_good_file,'a') as good_MPTIS:
+                    good_MPTIS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+                with open(MPTIS_all_file,'a') as all_MPTIS:
+                    all_MPTIS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+            else:
+                with open(MPTIS_bad_file,'a') as bad_MPTIS:
+                    bad_MPTIS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+                with open(MPTIS_all_file,'a') as all_MPTIS:
+                    all_MPTIS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+        if T[i][1]=='MPTMS':
+            if float(T[i][5])>=0.05:
+                with open(MPTMS_good_file,'a') as good_MPTMS:
+                    good_MPTMS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+                with open(MPTMS_all_file,'a') as all_MPTMS:
+                    all_MPTMS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+            else:
+                with open(MPTMS_bad_file,'a') as bad_MPTMS:
+                    bad_MPTMS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+                with open(MPTMS_all_file,'a') as all_MPTMS:
+                    all_MPTMS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+    
+    end_partition_files(MPTS_all_file)
+    end_partition_files(MPTIS_all_file)
+    end_partition_files(MPTMS_all_file)
+    end_partition_files(MPTS_good_file)
+    end_partition_files(MPTIS_good_file)
+    end_partition_files(MPTMS_good_file)
+    end_partition_files(MPTS_bad_file)
+    end_partition_files(MPTIS_bad_file)
+    end_partition_files(MPTMS_bad_file)
+    
+    return
+    
+if __name__ == '__main__': 
+    aln_rootDir = '/data/srh/rawdata/BenchmarkAlignments/datasets'
+    SRH_rootDir = '/data/srh/processed_data/SRH_tables/'
+    IQtree_rootDir = '/data/srh/processed_data/IQtree'
+    for DirName, subdirList, fileList in os.walk(aln_rootDir):
+        for fname in fileList:
+	        if(fname=="alignment.nex"):
+	            head_DirName, datas = os.path.split(DirName)
+	            aln_path = os.path.join(DirName,fname)
+	            new_aln = os.path.join(DirName,'new_alignment.nex')
+	            if not os.path.exists(new_aln):
+	                datatype(aln_path)
+	                if datatype(aln_path):
+	                    start_time = time.time()
+	                    dset=Path(new_aln).parts[-2]
+	                    dat = Nexus.Nexus()
+	                    dat.read(new_aln) 
+	                    aln = AlignIO.read(open(new_aln), "nexus")
+	                    p = Test_aln(aln,dset,dat)
+	                    TempDir = os.path.join(SRH_rootDir,datas,'Data')
+	                    if not os.path.exists(TempDir):
+	                        os.makedirs(TempDir)
+	                        os.chdir(TempDir)
+	                    df =pd.DataFrame(p[1:], columns=p[0])
+	                    T=table(p)
+	                    tab=pd.DataFrame(T[1:],columns=table(p)[0])
+	                    tab.to_csv('tablebinom.csv')
+	                    df.to_csv('data.csv')
+	                    all_MPTS_path = os.path.join(IQtree_rootDir,datas,"MPTS","All")
+	                    if not os.path.exists(all_MPTS_path):
+	                        os.makedirs(all_MPTS_path)
+	                    good_MPTS_path = os.path.join(IQtree_rootDir,datas,"MPTS","Not_Bad")
+	                    if not os.path.exists(good_MPTS_path):
+	                        os.makedirs(good_MPTS_path)
+	                    bad_MPTS_path = os.path.join(IQtree_rootDir,datas,"MPTS","Bad")
+	                    if not os.path.exists(bad_MPTS_path):
+	                        os.makedirs(bad_MPTS_path)
+	                    all_MPTIS_path = os.path.join(IQtree_rootDir,datas,"MPTIS","All")
+	                    if not os.path.exists(all_MPTIS_path):
+	                        os.makedirs(all_MPTIS_path)
+	                    good_MPTIS_path = os.path.join(IQtree_rootDir,datas,"MPTIS","Not_Bad")
+	                    if not os.path.exists(good_MPTIS_path):
+	                        os.makedirs(good_MPTIS_path)
+	                    bad_MPTIS_path = os.path.join(IQtree_rootDir,datas,"MPTIS","Bad")
+	                    if not os.path.exists(bad_MPTIS_path):
+	                        os.makedirs(bad_MPTIS_path)
+	                    all_MPTMS_path = os.path.join(IQtree_rootDir,datas,'MPTMS','All')
+	                    if not os.path.exists(all_MPTMS_path):
+	                        os.makedirs(all_MPTMS_path)
+	                    good_MPTMS_path = os.path.join(IQtree_rootDir,datas,"MPTMS","Not_Bad")
+	                    if not os.path.exists(good_MPTMS_path):
+	                        os.makedirs(good_MPTMS_path)
+	                    bad_MPTMS_path = os.path.join(IQtree_rootDir,datas,"MPTMS","Bad")
+	                    if not os.path.exists(bad_MPTMS_path):
+	                        os.makedirs(bad_MPTMS_path)
+	                    MPTS_all_file = os.path.join(all_MPTS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(all_MPTS_path,'alignment.nex'))
+	                    MPTIS_all_file = os.path.join(all_MPTIS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(all_MPTIS_path,'alignment.nex'))
+	                    MPTMS_all_file = os.path.join(all_MPTMS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(all_MPTMS_path,'alignment.nex'))
+	                    MPTS_good_file = os.path.join(good_MPTS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(good_MPTS_path,'alignment.nex'))
+	                    MPTIS_good_file = os.path.join(good_MPTIS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(good_MPTIS_path,'alignment.nex'))
+	                    MPTMS_good_file = os.path.join(good_MPTMS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(good_MPTMS_path,'alignment.nex'))
+	                    MPTS_bad_file = os.path.join(bad_MPTS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(bad_MPTS_path,'alignment.nex'))
+	                    MPTIS_bad_file = os.path.join(bad_MPTIS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(bad_MPTIS_path,'alignment.nex'))
+	                    MPTMS_bad_file = os.path.join(bad_MPTMS_path,'partition.nex')
+	                    shutil.copy2(new_aln,os.path.join(bad_MPTMS_path,'alignment.nex'))
+	                    partition_files(T,new_aln)
+    print('process complete with no errors in', (time.time() - start_time))
