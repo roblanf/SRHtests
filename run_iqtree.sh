@@ -18,5 +18,5 @@ done
 
 # now run IQtree with topology tests (this re-estimates ML trees, but oh well for now)
 folders=$(find /data/srh/processed_data/IQtree -type f -name 'alignment.nex' -printf '%h\n' | sort -u)
-echo "$folders" | parallel -P $threads iqtree -s {}"/alignment.nex" -sp {}"/partition.nex" -bb 1000 -z trees.nex -zb 1000 -zw -au
+echo "$folders" | parallel -P $threads iqtree -s {}"/alignment.nex" -sp {}"/partition.nex" -bb 1000 -z {}"/trees.nex" -zb 10000 -zw -au -redo
 
