@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri May 26 12:19:37 2017
-
-@author: Suha nasser
+Authors Wenqi Zhang, Suha Naser, Rob Lanfear 
 """
 import numpy as np
 import itertools as ite
@@ -199,12 +197,13 @@ if __name__ == '__main__':
                 print(DirName)
                 head_DirName, datas = os.path.split(DirName)
                 aln_path = os.path.join(DirName,fname)
-                new_aln = os.path.join(DirName,'new_alignment.nex')
-                if not os.path.exists(new_aln):
-                    dset=Path(new_aln).parts[-2]
+
+                # if this file exists, we already did this dataset successfully
+                if not os.path.exists(os.path.join(IQtree_rootDir,datas,"MPTMS","Bad")):
+                    dset=Path(aln_path).parts[-2]
                     dat = Nexus.Nexus()
-                    dat.read(new_aln) 
-                    aln = AlignIO.read(open(new_aln), "nexus")
+                    dat.read(aln_path) 
+                    aln = AlignIO.read(open(aln_path), "nexus")
                     p = Test_aln(aln,dset,dat)
                     TempDir = os.path.join(SRH_rootDir,datas,'Data')
                     if not os.path.exists(TempDir):
@@ -243,21 +242,21 @@ if __name__ == '__main__':
                     if not os.path.exists(bad_MPTMS_path):
                         os.makedirs(bad_MPTMS_path)
                     MPTS_all_file = os.path.join(all_MPTS_path,'partition.nex')
-                    shutil.copy2(new_aln,os.path.join(all_MPTS_path,'alignment.nex'))
+                    shutil.copy2(aln_path,os.path.join(all_MPTS_path,'alignment.nex'))
                     MPTIS_all_file = os.path.join(all_MPTIS_path,'partition.nex')
-                    shutil.copy2(new_aln,os.path.join(all_MPTIS_path,'alignment.nex'))
+                    shutil.copy2(aln_path,os.path.join(all_MPTIS_path,'alignment.nex'))
                     MPTMS_all_file = os.path.join(all_MPTMS_path,'partition.nex')
-                    shutil.copy2(new_aln,os.path.join(all_MPTMS_path,'alignment.nex'))
+                    shutil.copy2(aln_path,os.path.join(all_MPTMS_path,'alignment.nex'))
                     MPTS_good_file = os.path.join(good_MPTS_path,'partition.nex')
-                    shutil.copy2(new_aln,os.path.join(good_MPTS_path,'alignment.nex'))
+                    shutil.copy2(aln_path,os.path.join(good_MPTS_path,'alignment.nex'))
                     MPTIS_good_file = os.path.join(good_MPTIS_path,'partition.nex')
-                    shutil.copy2(new_aln,os.path.join(good_MPTIS_path,'alignment.nex'))
+                    shutil.copy2(aln_path,os.path.join(good_MPTIS_path,'alignment.nex'))
                     MPTMS_good_file = os.path.join(good_MPTMS_path,'partition.nex')
-                    shutil.copy2(new_aln,os.path.join(good_MPTMS_path,'alignment.nex'))
+                    shutil.copy2(aln_path,os.path.join(good_MPTMS_path,'alignment.nex'))
                     MPTS_bad_file = os.path.join(bad_MPTS_path,'partition.nex')
-                    shutil.copy2(new_aln,os.path.join(bad_MPTS_path,'alignment.nex'))
+                    shutil.copy2(aln_path,os.path.join(bad_MPTS_path,'alignment.nex'))
                     MPTIS_bad_file = os.path.join(bad_MPTIS_path,'partition.nex')
-                    shutil.copy2(new_aln,os.path.join(bad_MPTIS_path,'alignment.nex'))
+                    shutil.copy2(aln_path,os.path.join(bad_MPTIS_path,'alignment.nex'))
                     MPTMS_bad_file = os.path.join(bad_MPTMS_path,'partition.nex')
-                    shutil.copy2(new_aln,os.path.join(bad_MPTMS_path,'alignment.nex'))
-                    partition_files(T,new_aln)
+                    shutil.copy2(aln_path,os.path.join(bad_MPTMS_path,'alignment.nex'))
+                    partition_files(T,aln_path)
