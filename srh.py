@@ -31,6 +31,7 @@ def simMtx(a, x, y):
     ax = (x[:, None] == a[None, :]).astype(int)
     ay = (y[:, None] == a[None, :]).astype(int)
     return np.dot(ay.T, ax)
+
 def MPTS(m):
     d=(m+m.T)
     off_diag_indices=np.triu_indices(len(d),1)
@@ -98,7 +99,6 @@ def Test_aln(aln,dset,dat):
             p[i]=np.array([dset,n,'MPTIS',aln[q[0]].name,aln[q[1]].name,pval(MPTIS(MPTS(m),MPTMS(m)),3)])
             i = i+1
     return p
-
 
 def table(p):
     Tests={'MPTS','MPTIS','MPTMS'}
@@ -192,7 +192,7 @@ def partition_files(T,aln_path):
 if __name__ == '__main__': 
     aln_rootDir = '/data/srh/rawdata/'
     SRH_rootDir = '/data/srh/processed_data/SRH_tables/'
-    IQtree_rootDir = '/data/srh/processed_data/IQtree'
+    IQtree_rootDir = '/data/srh/processed_data/IQtree/'
     for DirName, subdirList, fileList in os.walk(aln_rootDir):
         for fname in fileList:
             if(fname=="alignment.nex"):
@@ -201,7 +201,6 @@ if __name__ == '__main__':
                 aln_path = os.path.join(DirName,fname)
                 new_aln = os.path.join(DirName,'new_alignment.nex')
                 if not os.path.exists(new_aln):
-                    start_time = time.time()
                     dset=Path(new_aln).parts[-2]
                     dat = Nexus.Nexus()
                     dat.read(new_aln) 
