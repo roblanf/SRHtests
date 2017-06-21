@@ -15,7 +15,6 @@ import pandas as pd
 import math
 from pathlib import Path
 import seaborn as sns
-import matplotlib.pyplot as plt
 import os
 import shutil
 import time
@@ -100,17 +99,6 @@ def Test_aln(aln,dset,dat):
             i = i+1
     return p
 
-def plot(df,dset):
-    plt.close()
-    sns.set(style="darkgrid")
-    df.pvalue=pd.to_numeric(df.pvalue)
-    df = df[df.pvalue != -42]
-    g = sns.FacetGrid(df, row="Charset", col="Test", margin_titles=True)
-    bins = np.linspace(0,1,num=50)
-    g.map(plt.hist, "pvalue", color="steelblue", bins=bins, lw=0)
-    plt.savefig('chart.png')
-    plt.show()
-    return
 
 def table(p):
     Tests={'MPTS','MPTIS','MPTMS'}
@@ -127,7 +115,6 @@ def table(p):
             T[i][3]=len(np.where(M[M.columns[5]].values.astype(float)>=0.05)[0])
             T[i][4]=float(len(M))-(float(T[i][2])+float(T[i][3]))
             T[i][5]=binom_test(int(T[i][2]),(int(T[i][2])+int(T[i][3])),p=0.05,alternative='greater')
-            #use normal distibution to approximate binomial distribution by the central limit theorem - makes it easier to asses the 'tail'
             i = i+1
     return T
 
