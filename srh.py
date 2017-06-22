@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Authors Wenqi Zhang, Suha Naser, Rob Lanfear 
+Authors Wenqi Zhang, Suha Naser, Rob Lanfear. 
 """
 import numpy as np
 import itertools as ite
