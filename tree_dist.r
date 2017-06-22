@@ -2,17 +2,15 @@
 
 library(phangorn)
 library(plyr)
-path = "/data/srh/processed_data/IQtree"
+path = "~/Desktop/IQtree/"
 
 get_dists = function(treefile){
     trees = read.tree(treefile)
-    
-    
     if(length(trees)==3){
 
         # check for missing tips and drop them if necessary
-        m1 = setdiff(t[[1]]$tip.label, t[[2]]$tip.label)
-        m2 = setdiff(t[[1]]$tip.label, t[[3]]$tip.label)
+        m1 = setdiff(trees[[1]]$tip.label, trees[[2]]$tip.label)
+        m2 = setdiff(trees[[1]]$tip.label, trees[[3]]$tip.label)
         drop = union(m1, m2)
         
         if(length(drop)>0){
@@ -50,4 +48,4 @@ test = unlist(lapply(u, function (x) x[2]))
 rd$dataset = dataset
 rd$test = test
 
-write.csv(rd, file = "/data/srh/processed_data/treedistances.csv")
+write.csv(rd, file = "~/Desktop/IQtree/treedistances.csv")
