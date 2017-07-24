@@ -21,9 +21,9 @@ def is_non_zero_file(fpath): #Checks if a tree file is not empty
     return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
         
 for partition in glob.glob('/data/srh/processed_data/IQtree/*/*'):
-    All_tree_file = os.path.join(partition, 'All/tree_alignment.treefile')
-    Bad_tree_file = os.path.join(partition, 'Bad/tree_alignment.treefile')
-    Not_Bad_tree_file = os.path.join(partition, 'Not_Bad/tree_alignment.treefile')
-    tree_file = os.path.join(partition, 'tree.treefile')
+    All_tree_file = os.path.join(partition, 'All/alignment.treefile')
+    Bad_tree_file = os.path.join(partition, 'Bad/alignment.treefile')
+    Not_Bad_tree_file = os.path.join(partition, 'Not_Bad/alignment.treefile')
+    tree_file = os.path.join(partition, 'alignment.treefile')
     tree_for_topology(tree_file)
     if not is_non_zero_file(tree_file): os.remove(tree_file) #Deletes the tree file if empty
