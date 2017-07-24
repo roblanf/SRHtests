@@ -20,8 +20,7 @@ def tree_for_topology(tree_file): #Combines three IQ trees into one tree file
 def is_non_zero_file(fpath): #Checks if a tree file is not empty
     return os.path.isfile(fpath) and os.path.getsize(fpath) > 0
         
-tree_rootDir = 'C:/Users/Suha nasser/Documents/Processed_data/IQtree'
-for partition in glob.glob('C:/Users/Suha nasser/Documents/Processed_data/IQtree/*/*'):
+for partition in glob.glob('/data/srh/processed_data/IQtree/*/*'):
     All_tree_file = os.path.join(partition, 'All/tree_alignment.treefile')
     Bad_tree_file = os.path.join(partition, 'Bad/tree_alignment.treefile')
     Not_Bad_tree_file = os.path.join(partition, 'Not_Bad/tree_alignment.treefile')
