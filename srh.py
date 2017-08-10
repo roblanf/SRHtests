@@ -188,7 +188,7 @@ def partition_files(T,aln_path):
     return
     
 if __name__ == '__main__': 
-    aln_rootDir = '/data/srh/rawdata/'
+    aln_rootDir = '/data/srh/SRHtests/datasets/'
     SRH_rootDir = '/data/srh/processed_data/SRH_tables/'
     IQtree_rootDir = '/data/srh/processed_data/IQtree/'
     for DirName, subdirList, fileList in os.walk(aln_rootDir):
