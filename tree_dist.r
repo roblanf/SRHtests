@@ -2,7 +2,30 @@
 
 library(phangorn)
 library(plyr)
-path = "~/Dropbox/Projects_Current/systematic_bias/srh/processed_data/IQtree/"
+path = "/Users/roblanfear/Dropbox/Projects_Current/systematic_bias/processed_data/IQtree/"
+
+
+random.path.dist = function(N){
+  
+  a = rtree(N, rooted = FALSE, tip.label = NULL, br = NULL)
+  b = rtree(N, rooted = FALSE, tip.label = NULL, br = NULL)
+
+  return(path.dist(a, b))
+}
+
+normalised.path.dist = function(t1, t2){
+  
+    observed = path.dist(t1, t2)
+    
+    N = length(t1$tip.label)
+    
+    mean.pd = mean(replicate(n = 1000, expr = random.path.dist(100)))
+  
+    norm.pd = observed / mean.pd
+
+    return(norm.pd)    
+}
+
 
 get_dists = function(treefile){
     print(treefile)
@@ -13,20 +36,20 @@ get_dists = function(treefile){
 
         # check for missing tips and drop them if necessary
         m1 = setdiff(trees[[1]]$tip.label, trees[[2]]$tip.label)
-	print(m1)
-	m2 = setdiff(trees[[1]]$tip.label, trees[[3]]$tip.label)
-	print(m2)
-	drop = union(m1, m2)
-	print(drop)        
-        if(length(drop)>0){
-            trees[[1]] = drop.tip(trees[[1]], drop)   
-            trees[[2]] = drop.tip(trees[[2]], drop)   
-            trees[[3]] = drop.tip(trees[[3]], drop)   
-        }
+	      print(m1)
+	      m2 = setdiff(trees[[1]]$tip.label, trees[[3]]$tip.label)
+	      print(m2)
+	      drop = union(m1, m2)
+	      print(drop)        
         
-        all_bad = path.dist(trees[[1]], trees[[2]])
-        all_not = path.dist(trees[[1]], trees[[3]])
-        bad_not = path.dist(trees[[2]], trees[[3]])    
+	      if(length(drop)>0){
+	        all_bad = all_not = bad_not = NA
+	      }else{
+        
+            all_bad = normalised.path.dist(trees[[1]], trees[[2]])
+            all_not = normalised.path.dist(trees[[1]], trees[[3]])
+            bad_not = normalised.path.dist(trees[[2]], trees[[3]])    
+	      }
     }else{
         all_bad = all_not = bad_not = NA    
     }    
@@ -56,4 +79,4 @@ test = unlist(lapply(u, function (x) x[2]))
 rd$dataset = rep(dataset, each = 3)
 rd$test = rep(test, each = 3)
 
-write.csv(rd, file = "~/Dropbox/Projects_Current/systematic_bias/srh/processed_data/treedistances.csv")
+write.csv(rd, file = "~/Dropbox/Projects_Current/systematic_bias/tables/tree_distances.csv")
