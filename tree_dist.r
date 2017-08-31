@@ -5,12 +5,34 @@ library(plyr)
 path = "/Users/roblanfear/Dropbox/Projects_Current/systematic_bias/processed_data/IQtree/"
 
 
-random.path.dist = function(N){
+random.paired.path.dist = function(N){
   
   a = rtree(N, rooted = FALSE, tip.label = NULL, br = NULL)
   b = rtree(N, rooted = FALSE, tip.label = NULL, br = NULL)
 
   return(path.dist(a, b))
+}
+
+
+random.oneway.path.dist = function(N, t){
+  
+  a = rtree(N, rooted = FALSE, tip.label = NULL, br = NULL)
+  return(path.dist(a, t))
+  
+}
+
+
+normalised.oneway.path.dist = function(t1, t2){
+  
+  observed = path.dist(t1, t2)
+  
+  N = length(t1$tip.label)
+  
+  mean.pd = mean(replicate(n = 1000, expr = random.oneway.path.dist(N)))
+  
+  norm.pd = observed / mean.pd
+  
+  return(norm.pd)    
 }
 
 normalised.path.dist = function(t1, t2){
@@ -19,7 +41,7 @@ normalised.path.dist = function(t1, t2){
     
     N = length(t1$tip.label)
     
-    mean.pd = mean(replicate(n = 1000, expr = random.path.dist(100)))
+    mean.pd = mean(replicate(n = 1000, expr = random.paired.path.dist(N)))
   
     norm.pd = observed / mean.pd
 
@@ -43,19 +65,20 @@ get_dists = function(treefile){
 	      print(drop)        
         
 	      if(length(drop)>0){
-	        all_bad = all_not = bad_not = NA
+	          all_bad = all_not = bad_not = NA
 	      }else{
         
             all_bad = normalised.path.dist(trees[[1]], trees[[2]])
             all_not = normalised.path.dist(trees[[1]], trees[[3]])
-            bad_not = normalised.path.dist(trees[[2]], trees[[3]])    
+            bad_not = normalised.path.dist(trees[[2]], trees[[3]]) 
+            
 	      }
     }else{
         all_bad = all_not = bad_not = NA    
     }    
-    a = data.frame(t1 = 'all', t2 = 'bad', dist = all_bad)    
-    b = data.frame(t1 = 'all', t2 = 'not', dist = all_not)    
-    c = data.frame(t1 = 'bad', t2 = 'not', dist = bad_not)    
+    a = data.frame(t1 = 'all', t2 = 'bad', norm.dist = all_bad)    
+    b = data.frame(t1 = 'all', t2 = 'not', norm.dist = all_not)    
+    c = data.frame(t1 = 'bad', t2 = 'not', norm.dist = bad_not)    
     return(rbind(a, b, c))    
 }
 
