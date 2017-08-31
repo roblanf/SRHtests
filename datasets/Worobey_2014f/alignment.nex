@@ -346,15 +346,5 @@ begin SETS;
 	CHARSET PA_2ndpos = 2-2151\3;
 	CHARSET PA_3rdpos = 3-2151\3;
 
-    CHARPARTITION loci = 1:PA_1stpos, 2:PA_2ndpos, 3:PA_3rdpos;
-
-	[genomes]
-	CHARSET ssRNA = 1-2151;
-
-    CHARPARTITION genomes = 1:ssRNA;
-
-	[outgroups]
-	TAXSET outgroups = ;
-
 end;
 

@@ -341,14 +341,5 @@ begin SETS;
 	CHARSET MP_2ndpos = 2-759\3;
 	CHARSET MP_3rdpos = 3-759\3;
 
-    CHARPARTITION loci = 1:MP_1stpos, 2:MP_2ndpos, 3:MP_3rdpos;
-
-	[genomes]
-	CHARSET ssRNA = 1-759;
-
-    CHARPARTITION genomes = 1:ssRNA;
-
-	[outgroups]
-	TAXSET outgroups = ;
 
 end;
