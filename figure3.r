@@ -14,13 +14,17 @@ ggplot(d1, aes(Dataset)) + geom_bar(aes(weight = 1-pSH)) + facet_wrap(~Test, nco
 
 # tree distances
 t$comparison = paste(t$t1, "vs.", t$t2)
+position_dodge(width = 0.1)
+ggplot(t, aes(x=dataset, y = norm.dist)) + 
+    geom_point(aes(colour = comparison), position = position_dodge(width = 0.5), alpha = 0.75, size = 2, na.rm=TRUE) + 
+    facet_wrap(~test, ncol=1) + 
+    theme(axis.text.x=element_text(angle=90,hjust=1))
 
-
-ggplot(t, aes(x=dataset)) + geom_bar(aes(weight = dist)) + facet_grid(test~comparison) + theme(axis.text.x=element_text(angle=90,hjust=1))
-
-#rescale the big bars to 1, and then we can look at the detail a bit better
-t$dist[t$dist>1] = 1
-ggplot(t, aes(x=dataset)) + geom_bar(aes(weight = dist)) + facet_grid(test~comparison) + theme(axis.text.x=element_text(angle=90,hjust=1)) + ylim(0, 1)
+ggplot(t, aes(x=dataset, y = norm.dist)) + 
+  geom_point(aes(colour = comparison), position = position_dodge(width = 0.5), alpha = 0.75, size = 2, na.rm=TRUE) + 
+  facet_wrap(~test, ncol=1) + 
+  theme(axis.text.x=element_text(angle=90,hjust=1)) +
+  ylim(0, 1.5)
 
 
 # TO DO: combine d and t in such a way that we can colour each bar of the plot by a factor that indicates which of four cases are true
@@ -29,3 +33,4 @@ ggplot(t, aes(x=dataset)) + geom_bar(aes(weight = dist)) + facet_grid(test~compa
 # t2 rejects t1, but not vice versa
 # both trees reject each other
 # all according to pSH from d
+# make this the point shapes. Different shapes for different combinations.
