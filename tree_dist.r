@@ -2,6 +2,7 @@
 
 library(phangorn)
 library(plyr)
+library(phytools)
 path = "/Users/roblanfear/Dropbox/Projects_Current/systematic_bias/processed_data/IQtree/"
 
 
@@ -72,6 +73,24 @@ get_dists = function(treefile){
             all_not = normalised.path.dist(trees[[1]], trees[[3]])
             bad_not = normalised.path.dist(trees[[2]], trees[[3]]) 
             
+            assoc<-cbind(trees[[1]]$tip.label,trees[[1]]$tip.label)
+
+            pdf(file.path(dirname(treefile), "cophylo_all_bad.pdf"))
+            cpp = cophylo(trees[[1]],trees[[2]],assoc=assoc)
+            plot(cpp, fsize = 0.3)
+            dev.off()
+
+            pdf(file.path(dirname(treefile), "cophylo_all_not.pdf"))
+            cpp = cophylo(trees[[1]],trees[[3]],assoc=assoc)
+            plot(cpp, fsize = 0.3)
+            dev.off()
+
+            pdf(file.path(dirname(treefile), "cophylo_bad_not.pdf"))
+            cpp = cophylo(trees[[2]],trees[[3]],assoc=assoc)
+            plot(cpp, fsize = 0.3)
+            dev.off()
+            
+                        
 	      }
     }else{
         all_bad = all_not = bad_not = NA    
