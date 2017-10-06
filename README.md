@@ -1,12 +1,40 @@
 # SRH analysis pipeline
 
-1. run ```start_over.sh``` to clean out any old results
+All scripts have hard-coded input and output destinations. If you want to run them for yourself, you will need to adjust these destinations in each script as you go.
 
-2. run ```srh.py``` to get SRH stats and IQtree input files for all datasets in raw_data
+##### 1. run `sh start_over.sh`
 
-3. run ```run_iqtree.sh``` to run IQ tree on all the folders from 2 (everything in ```processed_data/IQtree```)
+This just deletes (with `rm -rf`, so be careful), `/data/srh/processed_data/SRH_tables/` and `/data/srh/processed_data/IQtree/`.
 
-4. run ```tree_dist.r``` this creates ```processed_data/tree_distances.csv``` which is a CSV file of tree-to-tree path distances comparing all three trees generated from each of the tree tests for each dataset. 
+##### 2. run `python srh.py`
+This will calculate SRH stats and IQtree input files for all datasets in `SRHtests/datasets`. It requires python 3.6.x or higher and dependencies as in the header of srh.py. Input and output files are hardcoded near the end of the script, change them if you need to. This script creates two output folders, each of which contains one folder for each dataset in `SRHtests/datasets`.
+
+* `/data/srh/processed_data/SRH_tables/` where each folder has two files:
+
+	* `data.csv` - raw data on pairwise MPTS, MPTIS, and MPTMS tests between all pairs of taxa in the alingment and for all CHARSETS in the alignment.
+
+	* `table_binom.csv` - binomial tests for each CHARSET and each test (MPTS, MPTIS, MPTMS) which ask whether we observe more p<0.05 than we would expect by chance.
+
+* `/data/srh/processed_data/IQtree/` each folder has three subfolders (`/MPTS`, `/MPTMS`, `/MPTIS`), each of which contain three more subfolders (`/All`, `/Bad`, `/Not_bad`). Each of these folders contains input files for IQtree. `/All` contains all of the CHARSETS in the alignment, `/Bad` contains the charsets with a significant binomial test result (i.e. p<0.05 for the binomial test), `Not_bad` contains the charsets with binomial tests results >=0.05. Each folder has the following files:
+
+	* `alignment.nex` a copy of the complete alignment for that dataset 
+
+	* `partition.nex` a description of the relevant charsets for that subfolder (i.e. all, bad, or not_bad)
+
+
+##### 3. run `sh run_iqtree.sh` 
+
+This will do three things in the following order (note there is a `threads` argument at the top of the script which you should change as appropriate):
+
+* Run IQtree on all of the sub-folders in `/data/srh/processed_data/IQtree/` with the following command: `iqtree -s alignment.nex -spp /partition.nex -bb 1000 -redo`
+
+* Make one `trees.nex` file for each of the tests in each of the datasets, if and only if all three analyses for that test (i.e. All, Bad, Not_bad) produced trees. This file is then copied into each of the test subfolders (`/MPTS`, `/MPTMS`, `/MPTIS`).
+
+* Run IQtree on all of the sub-folders in `/data/srh/processed_data/IQtree/`, this time including topology tests to compare the three trees in `trees.nex`, with the following command: `iqtree -s {}"/alignment.nex" -spp {}"/partition.nex" -bb 1000 -z {}"/trees.nex" -zb 10000 -zw -au -redo -safe`
+
+#### 4. run ```tree_dist.r``` 
+
+this creates ```processed_data/tree_distances.csv``` which is a CSV file of tree-to-tree path distances comparing all three trees generated from each of the tree tests for each dataset. 
 
 5. run `charsets_percentage.py` to generate a table that contains the percentage of the Bad and Not-Bad character sets in each data set
 
