@@ -3,8 +3,9 @@
 library(phangorn)
 library(plyr)
 library(phytools)
-path = "/Users/roblanfear/Dropbox/Projects_Current/systematic_bias/processed_data/IQtree/"
 
+path = "/data/srh/processed_data/IQtree/"
+output.file = "/data/srh/tables/tree_distances.csv"
 
 random.paired.path.dist = function(N){
   
@@ -121,4 +122,4 @@ test = unlist(lapply(u, function (x) x[2]))
 rd$dataset = rep(dataset, each = 3)
 rd$test = rep(test, each = 3)
 
-write.csv(rd, file = "~/Dropbox/Projects_Current/systematic_bias/tables/tree_distances.csv")
+write.csv(rd, file = output.file)
