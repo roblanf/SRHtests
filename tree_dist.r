@@ -7,6 +7,7 @@ library(phytools)
 path = "/data/srh/processed_data/IQtree/"
 output.file = "/data/srh/tables/tree_distances.csv"
 
+
 random.paired.path.dist = function(N){
   
   a = rtree(N, rooted = FALSE, tip.label = NULL, br = NULL)
@@ -15,14 +16,12 @@ random.paired.path.dist = function(N){
   return(path.dist(a, b))
 }
 
-
 random.oneway.path.dist = function(N, t){
   
   a = rtree(N, rooted = FALSE, tip.label = NULL, br = NULL)
   return(path.dist(a, t))
   
 }
-
 
 normalised.oneway.path.dist = function(t1, t2){
   
@@ -49,7 +48,6 @@ normalised.path.dist = function(t1, t2){
 
     return(norm.pd)    
 }
-
 
 get_dists = function(treefile){
     print(treefile)

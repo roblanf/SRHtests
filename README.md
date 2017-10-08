@@ -32,7 +32,7 @@ This will do three things in the following order (note there is a `threads` argu
 
 * Run IQtree on all of the sub-folders in `/data/srh/processed_data/IQtree/`, this time including topology tests to compare the three trees in `trees.nex`, with the following command: `iqtree -s {}"/alignment.nex" -spp {}"/partition.nex" -bb 1000 -z {}"/trees.nex" -zb 10000 -zw -au -redo -safe`
 
-##### 4. run `RScript tree_dist.r` 
+##### 4. run `Rscript tree_dist.r` 
 
 This will measure normalised Path Distances between all three pairs of trees (All vs Bad, All vs Not_Bad, Bad vs Not_bad) for each test (MPTS, MPTIS, MPTMS) within each dataset. It requires a couple of libraries listed at the top of the script.
 
