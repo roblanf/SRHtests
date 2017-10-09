@@ -55,4 +55,4 @@ for f in glob.glob('/data/srh/processed_data/SRH_tables/*/Data/tablebinom.csv'):
     all_charsets = all_charsets.append({'dataset': os.path.basename(os.path.dirname(os.path.dirname(f))), 'test': 'MPTS', 'Bad_Charsets %': MPTS_bad, 'Not_bad_Charsets %': MPTS_not_bad}, ignore_index=True)
     all_charsets = all_charsets.append({'dataset': os.path.basename(os.path.dirname(os.path.dirname(f))), 'test': 'MPTIS', 'Bad_Charsets %': MPTIS_bad, 'Not_bad_Charsets %': MPTIS_not_bad}, ignore_index=True)
     all_charsets = all_charsets.append({'dataset': os.path.basename(os.path.dirname(os.path.dirname(f))), 'test': 'MPTMS', 'Bad_Charsets %': MPTMS_bad, 'Not_bad_Charsets %': MPTMS_not_bad}, ignore_index=True)
-all_charsets.to_csv('/data/srh/processed_data/SRH_tables/charsets_percentage.csv')
+all_charsets.to_csv('/data/srh/tables/charsets_percentage.csv')
