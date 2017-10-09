@@ -14,7 +14,7 @@ def charsets_MPTS(tablebinom):
     Calculate the Percentage of Bad character sets and Not-Bad character sets for the MPTS test
     '''
     csvin = pd.read_csv(tablebinom)
-    csvin = csvin[csvin.test == 'MPTS']
+    csvin = csvin[csvin.Test == 'MPTS']
     bad = csvin.loc[csvin['p_binomial']<0.05]
     not_bad = csvin.loc[csvin['p_binomial']>=0.05]
     test_bad = len(bad)/len(csvin)*100
@@ -26,7 +26,7 @@ def charsets_MPTIS(tablebinom):
     Calculate the Percentage of Bad character sets and Not-Bad character sets for the MPTIS test
     '''
     csvin = pd.read_csv(tablebinom)
-    csvin = csvin[csvin.test == 'MPTIS']
+    csvin = csvin[csvin.Test == 'MPTIS']
     bad = csvin.loc[csvin['p_binomial']<0.05]
     not_bad = csvin.loc[csvin['p_binomial']>=0.05]
     test_bad = len(bad)/len(csvin)*100
@@ -38,7 +38,7 @@ def charsets_MPTMS(tablebinom):
     Calculate the Percentage of Bad character sets and Not-Bad character sets for the MPTMS test
     '''
     csvin = pd.read_csv(tablebinom)
-    csvin = csvin[csvin.test == 'MPTMS']
+    csvin = csvin[csvin.Test == 'MPTMS']
     bad = csvin.loc[csvin['p_binomial']<0.05]
     not_bad = csvin.loc[csvin['p_binomial']>=0.05]
     test_bad = len(bad)/len(csvin)*100
