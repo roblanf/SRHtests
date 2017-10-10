@@ -47,13 +47,17 @@ The file outputs the following things:
 
 * `/data/srh/tables/tree_distances.csv` which is a csv file that contains the pairwise tree distances for each pair of trees in each test for each dataset. I.e. there 9 comparisons total per dataset (3 for each of 3 tests). 
 
-
-
 this creates ```processed_data/tree_distances.csv``` which is a CSV file of tree-to-tree path distances comparing all three trees generated from each of the tree tests for each dataset. 
 
-5. run `charsets_percentage.py` to generate a table that contains the percentage of the Bad and Not-Bad character sets in each data set
+##### 6. run `python charsets_percentage.py` 
 
-7. run `charset_length.py`to generate a table that contains the length of each character set in each data set 
+This looks at the data in `/data/srh/processed_data/SRH_tables/` and calculates from these the percentage of bad and not_bad charsets in each dataset. 
+
+This is then output to a csv file: `/data/srh/tables/charsets_percentage.csv`
+
+##### 7. run `python charset_length.py`
+
+to generate a table that contains the length of each character set in each data set 
 
 8. run `is_charset_bad.py` to generate a table that divides the character sets into two categories: one that rejects the null hypothesis and one that does not
 
