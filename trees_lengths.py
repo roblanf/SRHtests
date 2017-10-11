@@ -28,4 +28,4 @@ for DirName, subdirList, fileList in os.walk(tree_rootDir):
         temp_file = os.path.join(DirName,'topology.txt')
         all_data = all_data.append(trees_length(original_file), ignore_index=True)
         os.remove(temp_file)
-all_data.to_csv(os.path.join(tree_rootDir, "trees_lengths.csv"), index=False)
+all_data.to_csv('/data/srh/processed_data/tables/trees_lengths.csv', index=False)
