@@ -20,7 +20,7 @@ for f in glob.glob('/data/srh/SRHtests/datasets/*/alignment.nex'):
     dat.read(f)
 
     for charset_name in dat.charsets.keys():                                 
-        length = len(dat.charsets[c])
+        length = len(dat.charsets[charset_name])
         table = table1.append({'dataset': os.path.basename(os.path.dirname(os.path.dirname(os.path.dirname(f)))), 'charset': charset_name, 'length': length}, ignore_index=True) 
 
 table.to_csv('/data/srh/processed_data/SRH_tables/charset_length.csv')
