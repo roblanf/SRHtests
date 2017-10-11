@@ -7,9 +7,9 @@ Created on Wed Aug 30 12:12:55 2017
 
 import pandas as pd
 
-df0 = pd.read_csv('/data/srh/processed_data/tables/charsets_percentage.csv')
-df1 = pd.read_csv('/data/srh/processed_data/tables/is_charset_bad.csv')
-df2 = pd.read_csv('/data/srh/processed_data/tables/charset_length.csv')
+df0 = pd.read_csv('/data/srh/tables/charsets_percentage.csv')
+df1 = pd.read_csv('/data/srh/tables/is_charset_bad.csv')
+df2 = pd.read_csv('/data/srh/tables/charset_length.csv')
 df3 = pd.DataFrame()
 df4 = pd.DataFrame()
 df5 = pd.DataFrame()
@@ -31,4 +31,4 @@ df0.rename(columns={'Test_x': 'Test_Bad Charsets', 'Test_y': 'Test_Not-bad Chars
 df0['Avg(Bad Charset length)'] = df0['Bad Charset length']/df0['No of Bad Charset']
 df0['Avg(Not-bad Charset length)'] = df0['Not-bad Charset length']/df0['No of Not-bad Charset']
 df0['Delta length (Bad-NB)'] = df0['Avg(Bad Charset length)'] - df0['Avg(Not-bad Charset length)']
-df0.to_csv('/data/srh/processed_data/tables/summary_charsets.csv', index=False)
+df0.to_csv('/data/srh/tables/summary_charsets.csv', index=False)

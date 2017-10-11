@@ -54,4 +54,4 @@ for DirName, subdirList, fileList in os.walk(tree_rootDir):
         if os.path.isfile(topology_file):
             if os.stat(topology_file).st_size == 0:
                 os.remove(topology_file)
-all_data.to_csv('/data/srh/processed_data/tables/topology_tests.csv')
+all_data.to_csv('/data/srh/tables/topology_tests.csv')

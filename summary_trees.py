@@ -7,9 +7,9 @@ Created on Fri Sep  1 10:06:35 2017
 
 import pandas as pd
 
-df0 = pd.read_csv('/data/srh/processed_data/tables/summary_charsets.csv')
-df1 = pd.read_csv('/data/srh/processed_data/tables/topology_tests.csv')
-df2 = pd.read_csv('/data/srh/processed_data/tables/trees_lengths.csv')
+df0 = pd.read_csv('/data/srh/tables/summary_charsets.csv')
+df1 = pd.read_csv('/data/srh/tables/topology_tests.csv')
+df2 = pd.read_csv('/data/srh/tables/trees_lengths.csv')
 df3 = pd.DataFrame()
 df4 = pd.DataFrame()
 df5 = pd.DataFrame()
@@ -39,4 +39,4 @@ del df7['Not-bad Charset length']
 df8 = df5.append([df6, df7], ignore_index=True)
 df8.sort_values(by=['dataset', 'partition', 'tree'], inplace=True)
 
-df8.to_csv('/data/srh/processed_data/tables/summary_trees.csv', index=False)
+df8.to_csv('/data/srh/summary_trees.csv', index=False)

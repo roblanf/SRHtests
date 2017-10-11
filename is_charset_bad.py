@@ -25,4 +25,4 @@ for f in glob.glob('/data/srh/processed_data/SRH_tables/*/Data/tablebinom.csv'):
     bad_data(f)
     df1 = pd.read_csv(f)
     all_data = all_data.append(df1,ignore_index=True)
-all_data.to_csv('/data/srh/processed_data/tables/is_charset_bad.csv', index=False)
+all_data.to_csv('/data/srh/tables/is_charset_bad.csv', index=False)
