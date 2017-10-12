@@ -25,15 +25,15 @@ This will calculate SRH stats and IQtree input files for all datasets in `SRHtes
 
 ##### 3. run `sh run_iqtree.sh` 
 
-This will do three things in the following order (note there is a `threads` argument at the top of the script which you should change as appropriate):
+This will do three things in the following order (note there is a `threads` argument at the top of the script which you should change as appropriate, it also relies on GNU parallel):
 
-* Run IQtree on all of the sub-folders in `/data/srh/processed_data/IQtree/` with the following command: `iqtree -s alignment.nex -spp /partition.nex -bb 1000 -redo`
+* Run IQtree on all of the sub-folders in `/data/srh/processed_data/IQtree/` with the following command: `iqtree -s alignment.nex -spp partition.nex -bb 1000 -redo`
 
 * Make one `trees.nex` file for each of the tests in each of the datasets, if and only if all three analyses for that test (i.e. All, Bad, Not_bad) produced trees. This file is then copied into each of the test subfolders (`/MPTS`, `/MPTMS`, `/MPTIS`).
 
-* Run IQtree on all of the sub-folders in `/data/srh/processed_data/IQtree/`, this time including topology tests to compare the three trees in `trees.nex`, with the following command: `iqtree -s {}"/alignment.nex" -spp {}"/partition.nex" -bb 1000 -z {}"/trees.nex" -zb 10000 -zw -au -redo -safe`
+* Run IQtree on all of the sub-folders in `/data/srh/processed_data/IQtree/`, this time including topology tests to compare the three trees in `trees.nex`, with the following command: `iqtree -s alignment.nex -spp partition.nex -bb 1000 -z {}"/trees.nex" -zb 10000 -zw -au -redo -safe`
 
-##### 4. Run 'mkdir /data/srh/tables'
+##### 4. Run `mkdir /data/srh/tables`
 
 This just makes a directory for the output of the following scripts which take the raw data from steps 1-3 and convert them into summary tables for analysis.
 
