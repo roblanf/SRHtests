@@ -39,4 +39,4 @@ del df7['Not-bad Charset length']
 df8 = df5.append([df6, df7], ignore_index=True)
 df8.sort_values(by=['dataset', 'partition', 'tree'], inplace=True)
 
-df8.to_csv('/data/srh/summary_trees.csv', index=False)
+df8.to_csv('/data/srh/tables/summary_trees.csv', index=False)

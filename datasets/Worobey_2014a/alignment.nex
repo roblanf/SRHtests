@@ -160,15 +160,5 @@ begin SETS;
 	CHARSET H7_2ndpos = 2-1716\3;
 	CHARSET H7_3rdpos = 3-1716\3;
 
-    CHARPARTITION loci = 1:H7_1stpos, 2:H7_2ndpos, 3:H7_3rdpos;
-
-	[genomes]
-	CHARSET ssRNA = 1-1716;
-
-    CHARPARTITION genomes = 1:ssRNA;
-
-	[outgroups]
-	TAXSET outgroups = ;
-
 end;
 
