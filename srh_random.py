@@ -64,6 +64,12 @@ def random_part(path,k,n_k):
             g.writelines(line for line in open(path) if line not in open(bad_random_file))
             g.writelines("end;")
         shutil.copy2(os.path.join(aln_path,datas,'MPTS','All','alignment.nex'),os.path.join(good_random_path,'alignment.nex'))
+        all_random_path = os.path.join(random_MPTS_path,'All','All'+str(i))
+        if not os.path.exists(all_random_path):
+            os.makedirs(all_random_path)
+        shutil.copy2(os.path.join(aln_path,datas,'MPTS','All','alignment.nex'),os.path.join(all_random_path,'alignment.nex'))
+        shutil.copy2(os.path.join(aln_path,datas,'MPTS','All','partition.nex'),os.path.join(all_random_path,'partition.nex'))
+        shutil.copy2(os.path.join(aln_path,datas,'MPTS','All','partition.nex.treefile'),os.path.join(all_random_path,'partition.nex.treefile'))
     return
 
 
