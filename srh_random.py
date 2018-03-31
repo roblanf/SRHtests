@@ -39,7 +39,7 @@ def random_part(path,k,n_k):
     '''
     Generates 20 random partition files and thier complement parition files for the MPTS test only
     '''
-        for i in range(1,21):
+    for i in range(1,21):
         lines = open(path).readlines()
         lines = lines[2:-1]
         sub_random_path = os.path.join(random_MPTS_path, 'Random'+str(i))
