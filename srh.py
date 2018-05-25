@@ -6,7 +6,6 @@ import numpy as np
 import itertools as ite
 from scipy.stats import chi2
 from scipy.stats import binom_test
-import scipy as sp
 from Bio.Nexus import Nexus
 from Bio import AlignIO
 import pandas as pd
@@ -29,14 +28,26 @@ def simMtx(a, x, y):
     return np.dot(ay.T, ax)
 
 def MPTS(m):
-    d=(m+m.T)
-    off_diag_indices=np.triu_indices(len(d),1)
-    if 0 in d[off_diag_indices]:
-        return np.nan
+    denominator = m+m.T
+    off_diag_indices=np.triu_indices(len(denominator),1)
+    numerator = np.power(m-m.T,2)
+    numerator = np.squeeze(np.asarray(numerator[off_diag_indices]))
+    denominator = np.squeeze(np.asarray(denominator[off_diag_indices]))
+    nonzeros = np.where(denominator != 0)[0]
+    if denominator[nonzeros].size != 0:
+        s = np.sum(np.divide(numerator[nonzeros], denominator[nonzeros]))
+        return float(s)
     else:
-        numerator=(m-m.T)**2
-        denominator=m+m.T
-        return np.sum(numerator[off_diag_indices]/denominator[off_diag_indices])
+        return np.nan
+    
+def MPTS_df(m):
+    denominator = m+m.T
+    off_diag_indices=np.triu_indices(len(denominator),1)
+    denominator = np.squeeze(np.asarray(denominator[off_diag_indices]))
+    i = np.count_nonzero(denominator)
+    return int(i)
+
+
 
 def MPTMS(m):
     r = np.zeros((3))
@@ -53,24 +64,24 @@ def MPTMS(m):
             V[i,j]=r[i]+c[i]-2*m[i][i] #d_{i*}+d{*i}+2d{ii}
         elif i!=j:
             V[i,j]=-(m[i,j]+m[j,i])
-    if sp.linalg.det(V) == 0:
+    if np.linalg.matrix_rank(V) != V.shape[0]:
         s=np.nan
     else:
         Vi=np.linalg.inv(V)
         s = (ut.dot(Vi)).dot(u)[0][0]
-    return s
+    return float(s)
 
-def MPTIS(MPTSs,MPTMSs):
+def MPTIS(MPTSs,MPTSDF, MPTMSs):
     if isinstance(MPTSs,float) and isinstance(MPTMSs,float)==True:
-        s = MPTSs-MPTMSs
+        if (MPTSDF > 3):
+            s = MPTSs-MPTMSs
+        else:
+            s=np.nan
     else:
         s=np.nan
     return s
 
 def pval(sval,v):
-    '''
-    Gets a test statistic and outputs a pvalue for a chi squarred test with degrees of freedom v
-    '''
     if math.isnan(sval)==False:
         p = 1.-float(chi2.cdf(sval,v))
     else:
@@ -80,23 +91,37 @@ def pval(sval,v):
 def Test_aln(aln,dset,dat):
     aln_array = np.array([list(rec) for rec in aln], np.character)
     dat.charsets.keys()
-    p = pd.DataFrame(columns=['Dataset','Charset','Test','Sp1','Sp2','pvalue'])
+    no = nCr(len(aln),2)*3*len([len(v) for v in dat.charsets.keys()])+1
+    p=np.empty([no,6],dtype='U22')
+    i = 1
+    p[0] = np.array(['Dataset','Charset','Test','Sp1','Sp2','pvalue'])
     for n in tqdm(dat.charsets.keys()):
         for q in ite.combinations(list(range(len(aln))),2): #iterating over all taxa for sites
             m = simMtx('ACGT',aln_array[:,dat.charsets[n]][q[0]].tostring().upper().decode(),aln_array[:,dat.charsets[n]][q[1]].tostring().upper().decode())
-            p = p.append({'Dataset':dset,'Charset':n, 'Test':'MPTS', 'Sp1':aln[q[0]].name, 'Sp2':aln[q[1]].name, 'pvalue':pval(MPTS(m),6)}, ignore_index=True)
-            p = p.append({'Dataset':dset,'Charset':n, 'Test':'MPTMS', 'Sp1':aln[q[0]].name, 'Sp2':aln[q[1]].name, 'pvalue':pval(MPTMS(m),3)}, ignore_index=True)
-            p = p.append({'Dataset':dset,'Charset':n, 'Test':'MPTIS', 'Sp1':aln[q[0]].name, 'Sp2':aln[q[1]].name, 'pvalue':pval(MPTIS(MPTS(m),MPTMS(m)),3)}, ignore_index=True)
+            p[i]=np.array([dset,n,'MPTS',aln[q[0]].name,aln[q[1]].name, pval(MPTS(m), MPTS_df(m))])
+            i = i+1
+            p[i]=np.array([dset,n,'MPTMS',aln[q[0]].name,aln[q[1]].name,pval(MPTMS(m),3)])
+            i = i+1
+            p[i]=np.array([dset,n,'MPTIS',aln[q[0]].name,aln[q[1]].name,pval(MPTIS(MPTS(m),MPTS_df(m),MPTMS(m)), (MPTS_df(m) - 3))])
+            i = i+1
     return p
     
 def table(p):
     Tests={'MPTS','MPTIS','MPTMS'}
-    T = pd.DataFrame(columns=['Charset','Test','p<0.05','p>=0.05','NA','p_binomial'])
+    T=np.empty([len(dat.charsets.keys())*3+1,6], dtype='<U22')
+    T[0]= np.array(['Charset','Test','p<0.05','p>=0.05','NA','p_binomial'])
+    i = 1
     for n in dat.charsets.keys():
-        dfx = p.groupby(['Charset']).get_group(n)
+        dfx=df.groupby(['Charset']).get_group(n)
         for m in Tests:
             M = dfx.groupby(['Test']).get_group(m)
-            T = T.append({'Charset':n, 'Test':m,  'p<0.05':M.loc[M['pvalue']<0.05].count()['pvalue'], 'p>=0.05':M.loc[M['pvalue']>=0.05].count()['pvalue'], 'NA':sum(pd.isnull(M['pvalue'])), 'p_binomial': binom_test(M.loc[M['pvalue']<0.05].count()['pvalue'], M.loc[M['pvalue']<0.05].count()['pvalue'] + M.loc[M['pvalue']>=0.05].count()['pvalue'], 0.05, 'greater')}, ignore_index = True)
+            T[i][0]=n
+            T[i][1]=m
+            T[i][2]=len(np.where(np.absolute(M[M.columns[5]].values.astype(float))<0.05)[0])
+            T[i][3]=len(np.where(M[M.columns[5]].values.astype(float)>=0.05)[0])
+            T[i][4]=float(len(M))-(float(T[i][2])+float(T[i][3]))
+            T[i][5]=binom_test(int(T[i][2]),(int(T[i][2])+int(T[i][3])),p=0.05,alternative='greater')
+            i = i+1
     return T
 
 def init_partition_files(partition_file):
@@ -121,54 +146,42 @@ def partition_files(T,aln_path):
     init_partition_files(MPTIS_bad_file)
     init_partition_files(MPTMS_bad_file)
 
-    mpts = T.groupby(['Test']).get_group('MPTS')
-    good = mpts.loc[mpts['p_binomial'] >= 0.05]['Charset'].values
-    bad = mpts.loc[mpts['p_binomial'] < 0.05]['Charset'].values
-    if len(good) > 0:
-        for char in good:
-            with open(MPTS_good_file,'a') as good_MPTS:
-                good_MPTS.writelines(line for line in open(aln_path) if 'CHARSET '+ char in line)
-            with open(MPTS_all_file,'a') as all_MPTS:
-                all_MPTS.writelines(line for line in open(aln_path) if 'CHARSET '+ char in line)
-    if len(bad) > 0:
-        for char in bad:
-            with open(MPTS_bad_file,'a') as bad_MPTS:
-                bad_MPTS.writelines(line for line in open(aln_path) if 'CHARSET '+ char in line)
-            with open(MPTS_all_file,'a') as all_MPTS:
-                all_MPTS.writelines(line for line in open(aln_path) if 'CHARSET '+ char in line)
-    
-    mptis = T.groupby(['Test']).get_group('MPTIS')
-    good = mptis.loc[mptis['p_binomial'] >= 0.05]['Charset'].values
-    bad = mptis.loc[mptis['p_binomial'] < 0.05]['Charset'].values
-    if len(good) > 0:
-        for char in good:
-            with open(MPTIS_good_file,'a') as good_MPTIS:
-                good_MPTIS.writelines(line for line in open(aln_path) if 'CHARSET '+ char in line)
-            with open(MPTIS_all_file,'a') as all_MPTIS:
-                all_MPTIS.writelines(line for line in open(aln_path) if 'CHARSET '+ char in line)
-    if len(bad) > 0:
-        for char in bad:
-            with open(MPTIS_bad_file,'a') as bad_MPTIS:
-                bad_MPTIS.writelines(line for line in open(aln_path) if 'CHARSET '+ char in line)
-            with open(MPTIS_all_file,'a') as all_MPTIS:
-                all_MPTIS.writelines(line for line in open(aln_path) if 'CHARSET '+ char in line)
-    
-    mptms = T.groupby(['Test']).get_group('MPTMS')
-    good = mptms.loc[mptms['p_binomial'] >= 0.05]['Charset'].values
-    bad = mptms.loc[mptms['p_binomial'] < 0.05]['Charset'].values
-    if len(good) > 0:
-        for char in good:
-            with open(MPTMS_good_file,'a') as good_MPTMS:
-                good_MPTMS.writelines(line for line in open(aln_path) if 'CHARSET '+ char in line)
-            with open(MPTMS_all_file,'a') as all_MPTMS:
-                all_MPTMS.writelines(line for line in open(aln_path) if 'CHARSET '+ char in line)
-    if len(bad) > 0:
-        for char in bad:
-            with open(MPTMS_bad_file,'a') as bad_MPTMS:
-                bad_MPTMS.writelines(line for line in open(aln_path) if 'CHARSET '+ char in line)
-            with open(MPTMS_all_file,'a') as all_MPTMS:
-                all_MPTMS.writelines(line for line in open(aln_path) if 'CHARSET '+ char in line)
-    
+    i = 1
+    for i in range(len(T)):
+        if T[i][1]=='MPTS':
+            if float(T[i][5])>=0.05:
+                with open(MPTS_good_file,'a') as good_MPTS:
+                    good_MPTS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+                with open(MPTS_all_file,'a') as all_MPTS:
+                    all_MPTS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+            else:
+                with open(MPTS_bad_file,'a') as bad_MPTS:
+                    bad_MPTS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+                with open(MPTS_all_file,'a') as all_MPTS:
+                    all_MPTS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+        if T[i][1]=='MPTIS':
+            if float(T[i][5])>=0.05:
+                with open(MPTIS_good_file,'a') as good_MPTIS:
+                    good_MPTIS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+                with open(MPTIS_all_file,'a') as all_MPTIS:
+                    all_MPTIS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+            else:
+                with open(MPTIS_bad_file,'a') as bad_MPTIS:
+                    bad_MPTIS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+                with open(MPTIS_all_file,'a') as all_MPTIS:
+                    all_MPTIS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+        if T[i][1]=='MPTMS':
+            if float(T[i][5])>=0.05:
+                with open(MPTMS_good_file,'a') as good_MPTMS:
+                    good_MPTMS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+                with open(MPTMS_all_file,'a') as all_MPTMS:
+                    all_MPTMS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+            else:
+                with open(MPTMS_bad_file,'a') as bad_MPTMS:
+                    bad_MPTMS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+                with open(MPTMS_all_file,'a') as all_MPTMS:
+                    all_MPTMS.writelines(line for line in open(aln_path) if 'CHARSET '+T[i][0] in line)
+                    
     end_partition_files(MPTS_all_file)
     end_partition_files(MPTIS_all_file)
     end_partition_files(MPTMS_all_file)
@@ -203,9 +216,11 @@ if __name__ == '__main__':
                     if not os.path.exists(TempDir):
                         os.makedirs(TempDir)
                         os.chdir(TempDir)
+                    df =pd.DataFrame(p[1:], columns=p[0])
                     T=table(p)
-                    T.to_csv('tablebinom.csv')
-                    p.to_csv('data.csv')
+                    tab=pd.DataFrame(T[1:],columns=table(p)[0])
+                    tab.to_csv('tablebinom.csv')
+                    df.to_csv('data.csv')
                     all_MPTS_path = os.path.join(IQtree_rootDir,datas,"MPTS","All")
                     if not os.path.exists(all_MPTS_path):
                         os.makedirs(all_MPTS_path)
