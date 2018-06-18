@@ -28,4 +28,5 @@ for DirName, subdirList, fileList in os.walk(tree_rootDir):
         temp_file = os.path.join(DirName,'topology.txt')
         all_data = all_data.append(trees_length(original_file), ignore_index=True)
         os.remove(temp_file)
+all_data['partition'].replace(['Bad','Not_Bad'], ['fail','pass'], inplace=True)
 all_data.to_csv('/data/srh/tables/trees_lengths.csv', index=False)

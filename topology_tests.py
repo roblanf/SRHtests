@@ -37,7 +37,7 @@ def trees_for_topology(IQtree):
     csvin['partition'] = os.path.basename(os.path.dirname(IQtree))
     csvin['test'] = os.path.basename(os.path.dirname(os.path.dirname(IQtree)))
     csvin['dataset'] = os.path.basename(os.path.dirname(os.path.dirname(os.path.dirname(IQtree))))
-    csvin['Tree'].replace([1,2,3], ['All','Bad','Not_Bad'], inplace=True) #Replaces the numbers with the relevant tree
+    csvin['Tree'].replace([1,2,3], ['All','pass','fail'], inplace=True) #Replaces the numbers with the relevant tree
     csvin.rename(columns={'Tree': 'tree'}, inplace=True)
     csvin['logL'] = -csvin['logL']
     return csvin

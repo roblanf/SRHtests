@@ -21,14 +21,14 @@ df7 = df7.groupby(['dataset', 'Test']).size().reset_index()
 df3 = df3.groupby(['dataset', 'Test', 'isbad']).sum().reset_index()
 df4 = df3.loc[df3['isbad'] == 0, ['dataset', 'Test', 'length']]
 df5 = df3.loc[df3['isbad'] == 1, ['dataset', 'Test', 'length']]
-df4.rename(columns={'length': 'Not-bad Charset length'}, inplace=True)
-df5.rename(columns={'length': 'Bad Charset length'}, inplace=True)
+df4.rename(columns={'length': 'pass Charset length'}, inplace=True)
+df5.rename(columns={'length': 'fail Charset length'}, inplace=True)
 df4 = pd.merge(df4, df6, how = 'left', left_on=['dataset', 'Test'], right_on=['dataset', 'Test'])
 df5 = pd.merge(df5, df7, how = 'left', left_on=['dataset', 'Test'], right_on=['dataset', 'Test'])
 df0 = pd.merge(df0, df5, how = 'left', left_on=['dataset', 'test'], right_on=['dataset', 'Test'])
 df0 = pd.merge(df0, df4, how = 'left', left_on=['dataset', 'test'], right_on=['dataset', 'Test'])
-df0.rename(columns={'Test_x': 'Test_Bad Charsets', 'Test_y': 'Test_Not-bad Charsets', '0_y': 'No of Not-bad Charset', '0_x': 'No of Bad Charset'}, inplace=True)
-df0['Avg(Bad Charset length)'] = df0['Bad Charset length']/df0['No of Bad Charset']
-df0['Avg(Not-bad Charset length)'] = df0['Not-bad Charset length']/df0['No of Not-bad Charset']
-df0['Delta length (Bad-NB)'] = df0['Avg(Bad Charset length)'] - df0['Avg(Not-bad Charset length)']
+df0.rename(columns={'Test_x': 'Test_fail Charsets', 'Test_y': 'Test_pass Charsets', '0_y': 'No of pass Charset', '0_x': 'No of fail Charset'}, inplace=True)
+df0['Avg(fail Charset length)'] = df0['fail Charset length']/df0['No of fail Charset']
+df0['Avg(pass Charset length)'] = df0['pass Charset length']/df0['No of pass Charset']
+df0['Delta length (fail-pass)'] = df0['Avg(fail Charset length)'] - df0['Avg(pass Charset length)']
 df0.to_csv('/data/srh/tables/summary_charsets.csv', index=False)
