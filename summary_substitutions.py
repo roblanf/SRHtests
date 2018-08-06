@@ -251,11 +251,11 @@ if __name__ == '__main__':
             os.remove(temp_df2)
    
     tree_length['partition'].replace(['Bad','Not_Bad'], ['fail','pass'], inplace=True) #Replaces the names of the subsets
-    all_data = pd.merge(all_data, tree_length, how='outer', on=['dataset', 'test', 'partition'])
+    all_data = pd.merge(all_data, tree_length, how='left', on=['dataset', 'test', 'partition'])
     all_data.rename(columns={'Name': 'charset'}, inplace=True)
-    all_data = pd.merge(all_data, No_taxa, how='outer', on=['dataset', 'test', 'partition'])
+    all_data = pd.merge(all_data, No_taxa, how='left', on=['dataset', 'test', 'partition'])
     charsets = charsets_length(tree_rootDir)
-    all_data = pd.merge(all_data, charsets, how='outer', on=['dataset', 'charset'])
+    all_data = pd.merge(all_data, charsets, how='left', on=['dataset', 'charset'])
     all_data['genome'] = all_data.apply(genome, axis=1)
     all_data['type'] = all_data.apply(nucleotide_type, axis=1)
 
