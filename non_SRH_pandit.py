@@ -20,7 +20,7 @@ def root_tree(tree_file):
     t.write(format=1, outfile= tree_file) #write in Newick formate
     return
 
-def Create_Hetero_Files(model_file, iqtree_file, tree_file, site_info_file, parameter_file, trees_file, param_file_list, temp_file):
+def Create_Hetero_Files(model_file, iqtree_file, tree_file, site_info_file, SRH_parameter_file, trees_file, param_file_list, temp_file):
 #root the tree in a midpoint node
     with open(tree_file, 'r') as input_file, open(temp_file, 'w') as output_file:
         for line in input_file:
@@ -57,7 +57,7 @@ def Create_Hetero_Files(model_file, iqtree_file, tree_file, site_info_file, para
                 parameters.insert(2, '1')
                 parameters.insert(3, '1')
                 parameters.insert(5, '1')
-            elif model == 'K3P' or model == 'K81' or model == 'K81u':
+            elif model == 'K3P' or model == 'K3Pu' or model == 'K81' or model == 'K81u':
                 parameters.insert(0, '1')
                 parameters.insert(3, parameters[2])
                 parameters.insert(4, parameters[1])
@@ -107,6 +107,7 @@ def Create_Hetero_Files(model_file, iqtree_file, tree_file, site_info_file, para
     df = pd.DataFrame(desired_rows)
     invariant = (round(int(df.iloc[1][5])/int(df.iloc[1][2]), 5))
     variant = (round(1 - invariant, 5))
+    sites = df.iloc[1][2]
     invariant = [str(invariant)] + freq
     variant = [str(variant)] + freq
     invariant = '\t'.join(invariant)
@@ -122,7 +123,7 @@ def Create_Hetero_Files(model_file, iqtree_file, tree_file, site_info_file, para
         output_file.writelines('Category_1	variant\t'+variant)    
 
 #write the SRH parameter file    
-    with open(parameter_file, 'w') as output_file:
+    with open(SRH_parameter_file, 'w') as output_file:
         output_file.write('#Node	S1	S2	S3	S4	S5	S6	Pi_1	Pi_2	Pi_3	Pi_4\n')
         for i in range(0, taxa):
             output_file.writelines('T'+str(i)+'\t')
@@ -165,7 +166,7 @@ def Create_Hetero_Files(model_file, iqtree_file, tree_file, site_info_file, para
         output_file.writelines('Category_1\t')
         output_file.writelines(os.path.dirname(param_file_list)+'/parameter_1.txt')
     
-    return nodes-taxa, parameters, is_FQ
+    return nodes-taxa, parameters, is_FQ, str(sites)
 
 def Stationary_Heterogeneous_matrix(temp_file, parameter_file, i, parameters):
 #write a non-SRH parameter file
@@ -176,10 +177,10 @@ def Stationary_Heterogeneous_matrix(temp_file, parameter_file, i, parameters):
         taxa = len(t.get_leaves())
         r_node = t.search_nodes(name="N"+str(randint(0,i-1)))[0] #find a random node for splitting the tree
         detached_node = r_node.detach() #split the tree
-        if taxa > 5:
+        if taxa > 6:
             if len(detached_node.get_leaves()) > 2 and len(t.get_leaves()) > 2:
                 break
-        elif taxa <=5:
+        elif taxa <=6:
             if len(detached_node.get_leaves()) != 0 and len(t.get_leaves()) != 0:
                 break
     param_1 = []
@@ -210,10 +211,10 @@ def nonStationary_Heterogeneous_matrix(temp_file, parameter_file, i, parameters)
         taxa = len(t.get_leaves())
         r_node = t.search_nodes(name="N"+str(randint(0,i-1)))[0] #find a random node for splitting the tree
         detached_node = r_node.detach() #split the tree
-        if taxa > 5:
+        if taxa > 6:
             if len(detached_node.get_leaves()) > 2 and len(t.get_leaves()) > 2:
                 break
-        elif taxa <=5:
+        elif taxa <=6:
             if len(detached_node.get_leaves()) != 0 and len(t.get_leaves()) != 0:
                 break
     param_1 = []
@@ -251,23 +252,26 @@ def nonStationary_Homogeneous_matrix(temp_file, parameter_file, i, parameters):
         
 
 if __name__ == '__main__': 
-    rootDir = '/data/pandit/dna' #the root directory where all alignemnts are saved
+    rootDir = '/data_pandit/dna'
     fns = [Stationary_Heterogeneous_matrix, nonStationary_Heterogeneous_matrix, nonStationary_Homogeneous_matrix]
     for DirName, subdirList, fileList in tqdm(os.walk(rootDir)):
         if 'data.nex.iqtree' in fileList:
-            iqtree_file =  os.path.join(DirName,'data.nex.iqtree')
-            tree_file =  os.path.join(DirName,'data.nex.treefile')
-            model_file =  os.path.join(DirName,'data.nex.best_model.nex')
-            site_info_file = os.path.join(DirName,'site_info_file.txt')
-            parameter_file = os.path.join(DirName,'parameter_1.txt')
-            trees_file = os.path.join(DirName,'trees.txt')
-            param_file_list = os.path.join(DirName,'param_file_list.txt')
-            temp_file = os.path.join(DirName,'temp.txt') #create temporary file to store tree info
-            i, parameters, is_FQ, l = Create_Hetero_Files(model_file, iqtree_file, tree_file, site_info_file, parameter_file, trees_file, param_file_list,temp_file)
-            if is_FQ:
-                Stationary_Heterogeneous_matrix(temp_file, parameter_file, i, parameters)
-            else:
-                choice(fns)(temp_file, parameter_file, i, parameters)
-            os.remove(temp_file) #delete the temporary file
-            bashCommand = " ".join(["/home/suha/Hetero/Hetero2", trees_file, site_info_file, param_file_list, "-l", l])
-            os.system(bashCommand) #run Hetero2 
+            if not 'trees.out' in fileList:
+                print(DirName)
+                iqtree_file =  os.path.join(DirName,'data.nex.iqtree')
+                tree_file =  os.path.join(DirName,'data.nex.treefile')
+                model_file =  os.path.join(DirName,'data.nex.best_model.nex')
+                site_info_file = os.path.join(DirName,'site_info_file.txt')
+                parameter_file = os.path.join(DirName,'parameter_1.txt')
+                SRH_parameter_file = os.path.join(DirName,'parameter_2.txt')
+                trees_file = os.path.join(DirName,'trees.txt')
+                param_file_list = os.path.join(DirName,'param_file_list.txt')
+                temp_file = os.path.join(DirName,'temp.txt') #create temporary file to store tree info
+                i, parameters, is_FQ, l = Create_Hetero_Files(model_file, iqtree_file, tree_file, site_info_file, SRH_parameter_file, trees_file, param_file_list,temp_file)
+                if is_FQ:
+                    Stationary_Heterogeneous_matrix(temp_file, parameter_file, i, parameters)
+                else:
+                    choice(fns)(temp_file, parameter_file, i, parameters)
+                os.remove(temp_file) #delete the temporary file
+                bashCommand = " ".join(["/home/suha/Hetero/Hetero2", trees_file, site_info_file, param_file_list, "-l", l])
+                os.system(bashCommand) #run Hetero2 
