@@ -80,26 +80,9 @@ This creates a big summary table of everything we know about every charset we ha
 
 This creates a big summary table of everything we know about every tree we have generated. This is what we use to make figures from. The output is: `/data/srh/tables/summary_trees.csv`
 
-##### 13. run `srh_random.py`
 
-This creates a subfolder (`/MPTS/Random`) which contains 20 folders (`/Random1`,`/Random2`,...,'`/Random20`) with random partition files that have the same size as the fail/pass subsets in the MPTS.
+##### 13. run `figure1.r`
 
-##### 14. run `sh run_random_iqtree.sh` 
+##### 14. run `figure2.r`
 
-This will do three things in the following order (note there is a `threads` argument at the top of the script which you should change as appropriate, it also relies on GNU parallel):
-
-* Run IQtree on all of the sub-folders of minimum depth of 5 in `/data/srh/processed_data/IQtree/` with the following command: `iqtree -s {}"/alignment.nex" -spp {}"/partition.nex`
-
-* Make one `trees.nex` file for each of the subfolders. This file is then copied into each of the test subfolders (`/All`, `/Bad`, `/Not_Bad`).
-
-* Run IQtree on all of the sub-folders of minimum depth of in `/data/srh/processed_data/IQtree/`, this time including topology tests to compare the three trees in `trees.nex`, with the following command: `iqtree -s {}"/alignment.nex" -spp {}"/partition.nex" -te {}"/partition.nex.treefile" -z {}"/trees.nex" -zb 10000 -zw -redo -safe`
-
-##### 15. run `python random_topology_tests.py` 
-
-This extracts the topology tests from `/Random` folders to generate a table that contains all the topology tests results. The output is: `/data/srh/tables/random_topology_tests.csv`
-
-16. run `figure1.r`
-
-17. run `figure2.r`
-
-18. run `figure3.r`
+##### 15. run `figure3.r`
