@@ -1,0 +1,30 @@
+study:
+    reference: "Thiergart T, Landan G, Martin WF. 2014. Concatenated alignments and the case of the disappearing tree. BMC Evol. Biol. 14:266."
+    year: 2014
+    DOI: dx.doi.org/10.1186/s12862-014-0266-0
+
+dataset:
+    DOI: dx.doi.org/10.5061/dryad.06640
+    license: CC0
+    used for tree inference: yes
+    alignment:
+        ntax: 100
+        nchar: 28217
+        datatype: protein
+        partitions: 48
+    genomes:
+        mitochondrial: no
+        nuclear: no
+        chloroplast: no
+        dsDNA: no
+        ssDNA: no
+        dsRNA: no
+        ssRNA: no
+        bacterial: yes
+    timetree root age: 2910 mya
+    study root age: NA
+    study clade:
+        latin: "proteobacteria"
+        english: "proteobacteria"
+        taxon ID: 1224
+    notes: "This is the proteobacteria dataset with 48 genes, figure 1.B in the original paper"
